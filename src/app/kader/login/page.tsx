@@ -5,9 +5,9 @@ import { Card } from "@/components/ui/Card";
 export default async function KaderLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, message } = await searchParams;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-surface p-sm">
@@ -20,6 +20,13 @@ export default async function KaderLoginPage({
         {error && (
           <p className="mt-4 rounded-md bg-error-container px-3 py-2 text-label-md text-on-error-container">
             {error}
+          </p>
+        )}
+
+        {message === "confirm-email" && (
+          <p className="mt-4 rounded-md bg-secondary-container px-3 py-2 text-label-md text-on-secondary-container">
+            Pendaftaran berhasil — silakan cek email Anda untuk konfirmasi
+            sebelum masuk.
           </p>
         )}
 

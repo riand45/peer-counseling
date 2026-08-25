@@ -52,6 +52,115 @@ describe("schema: signup trigger fills in profiles from user metadata", () => {
   });
 });
 
+describe("schema: profiles privileged columns are protected from self-update", () => {
+  it("a kader cannot self-promote to role=guru / is_verified via their own client", async () => {
+    const service = getServiceClient();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const kader = await createTestUser("kader", { verified: true });
+      cleanup.push(() => deleteTestUser(kader.id));
+
+      const { client: asKader } = await signInTestUser(kader.email, kader.password);
+      // Coba naikkan hak sendiri, sekaligus ubah satu kolom biasa di request
+      // yang sama — kolom biasa harus tetap ter-update.
+      const { error: updateError } = await asKader
+        .from("profiles")
+        .update({ role: "guru", is_verified: true, bio: "bio baru" })
+        .eq("id", kader.id);
+      expect(updateError).toBeNull();
+
+      const { data: after, error: readError } = await service
+        .from("profiles")
+        .select("role, is_verified, bio")
+        .eq("id", kader.id)
+        .single();
+      expect(readError).toBeNull();
+      expect(after?.role).toBe("kader");
+      expect(after?.is_verified).toBe(true);
+      expect(after?.bio).toBe("bio baru");
+    } finally {
+      for (const fn of cleanup.reverse()) {
+        await fn();
+      }
+    }
+  });
+
+  it("an unverified kader cannot self-verify", async () => {
+    const service = getServiceClient();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const kader = await createTestUser("kader");
+      cleanup.push(() => deleteTestUser(kader.id));
+
+      const { client: asKader } = await signInTestUser(kader.email, kader.password);
+      await asKader.from("profiles").update({ is_verified: true }).eq("id", kader.id);
+
+      const { data: after } = await service
+        .from("profiles")
+        .select("is_verified")
+        .eq("id", kader.id)
+        .single();
+      expect(after?.is_verified).toBe(false);
+    } finally {
+      for (const fn of cleanup.reverse()) {
+        await fn();
+      }
+    }
+  });
+});
+
+describe("schema: is_guru() requires verification", () => {
+  it("an unverified guru is not treated as guru and cannot read other profiles", async () => {
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const guru = await createTestUser("guru");
+      cleanup.push(() => deleteTestUser(guru.id));
+      const kader = await createTestUser("kader", { verified: true });
+      cleanup.push(() => deleteTestUser(kader.id));
+
+      const { client: asGuru } = await signInTestUser(guru.email, guru.password);
+      const { data: isGuru, error: rpcError } = await asGuru.rpc("is_guru");
+      expect(rpcError).toBeNull();
+      expect(isGuru).toBe(false);
+
+      const { data: otherProfiles } = await asGuru
+        .from("profiles")
+        .select("id")
+        .eq("id", kader.id);
+      expect(otherProfiles).toHaveLength(0);
+    } finally {
+      for (const fn of cleanup.reverse()) {
+        await fn();
+      }
+    }
+  });
+
+  it("a verified guru is treated as guru and can read other profiles", async () => {
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const guru = await createTestUser("guru", { verified: true });
+      cleanup.push(() => deleteTestUser(guru.id));
+      const kader = await createTestUser("kader", { verified: true });
+      cleanup.push(() => deleteTestUser(kader.id));
+
+      const { client: asGuru } = await signInTestUser(guru.email, guru.password);
+      const { data: isGuru, error: rpcError } = await asGuru.rpc("is_guru");
+      expect(rpcError).toBeNull();
+      expect(isGuru).toBe(true);
+
+      const { data: otherProfiles } = await asGuru
+        .from("profiles")
+        .select("id")
+        .eq("id", kader.id);
+      expect(otherProfiles).toHaveLength(1);
+    } finally {
+      for (const fn of cleanup.reverse()) {
+        await fn();
+      }
+    }
+  });
+});
+
 describe("schema: kader/guru RLS scoping on sessions", () => {
   it("a kader can only see sessions assigned to them, not another kader's", async () => {
     const service = getServiceClient();

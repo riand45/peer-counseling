@@ -94,7 +94,18 @@ alter table public.profiles
 alter table public.profiles enable row level security;
 
 -- -------------------------------------------------------------
--- 3. Helper: apakah user saat ini seorang guru?
+-- 3. Helper: apakah user saat ini seorang guru (DAN terverifikasi)?
+--
+--    Guru wajib terverifikasi, sama seperti kader — pendaftaran
+--    mandiri di /guru/login tidak langsung memberi akses baca ke
+--    seluruh percakapan siswa.
+--
+--    BOOTSTRAP (penting): karena is_guru() mensyaratkan is_verified,
+--    tidak ada guru yang bisa memverifikasi guru lain sampai SATU
+--    akun guru pertama diverifikasi secara manual oleh admin project
+--    lewat Supabase Dashboard > Table Editor > profiles > set
+--    is_verified = true. Setelah itu, guru tersebut bisa
+--    memverifikasi kader dan guru lain lewat aplikasi.
 -- -------------------------------------------------------------
 create or replace function public.is_guru()
 returns boolean
@@ -108,6 +119,7 @@ as $$
     from public.profiles p
     where p.id = auth.uid()
       and p.role = 'guru'
+      and p.is_verified
   );
 $$;
 
@@ -281,7 +293,63 @@ create trigger on_message_created
   for each row execute procedure public.handle_new_message();
 
 -- -------------------------------------------------------------
--- 14. GRANTS
+-- 14. Trigger: lindungi kolom privileged di profiles
+--     (role & is_verified)
+--
+--     Policy "profiles: update profil sendiri" mengizinkan user
+--     meng-update BARIS-nya sendiri, tapi RLS tidak bisa membatasi
+--     KOLOM mana yang boleh diubah — jadi tanpa trigger ini setiap
+--     kader/guru yang sudah login bisa PATCH barisnya sendiri jadi
+--     role = 'guru', is_verified = true dan langsung dapat akses
+--     baca ke seluruh percakapan siswa (policy "guru baca semua").
+--
+--     Column grant TIDAK bisa dipakai di sini: grant kolom berlaku
+--     per Postgres role, bukan per baris/per policy — mencabut hak
+--     update kolom dari role `authenticated` juga akan mematikan
+--     policy "profiles: guru update semua" (verifikasi kader oleh
+--     guru juga jalan sebagai role `authenticated`).
+--
+--     Karena itu: trigger before update yang mengembalikan
+--     role/is_verified ke nilai lama kalau pelaku update bukan
+--     is_guru() — terlepas dari policy mana yang meloloskan baris.
+--     Kolom lain di request yang sama (bio, full_name, dst.) tetap
+--     ter-update normal; dua kolom di atas silently no-op, konsisten
+--     dengan perilaku verifyKader saat ditolak RLS.
+--
+--     Syarat `auth.uid() is not null`: trigger ini hanya membatasi
+--     end user yang login (JWT punya claim `sub`). Jalur tepercaya
+--     tanpa end user — service_role dari Server Action, SQL langsung
+--     dari Dashboard SQL Editor / Table Editor (termasuk langkah
+--     bootstrap guru pertama di bagian 3), dan migrasi — tetap boleh
+--     mengubah kedua kolom ini. Tanpa syarat itu, bootstrap guru
+--     pertama dan semua tulisan service_role akan ikut ter-revert
+--     tanpa pesan error. Role `anon` tidak punya grant update di
+--     public.profiles, jadi tidak ada celah lewat sana.
+-- -------------------------------------------------------------
+create or replace function public.protect_profile_privileged_columns()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if (new.role is distinct from old.role or new.is_verified is distinct from old.is_verified)
+     and auth.uid() is not null
+     and not public.is_guru() then
+    new.role := old.role;
+    new.is_verified := old.is_verified;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_profile_privileged_update on public.profiles;
+create trigger on_profile_privileged_update
+  before update on public.profiles
+  for each row execute procedure public.protect_profile_privileged_columns();
+
+-- -------------------------------------------------------------
+-- 15. GRANTS
 --     anon: TIDAK ADA grant sama sekali untuk sessions/messages/
 --     student_identities/session_reports/escalations/session_assignments.
 --     Semua akses sisi student lewat Server Action + service_role.
@@ -298,6 +366,17 @@ create trigger on_message_created
 --     seharusnya sama sekali tidak bisa diakses. Revoke dulu semuanya,
 --     baru grant ulang persis yang dimaksud.
 -- -------------------------------------------------------------
+
+-- Matikan default privileges bawaan Supabase untuk tabel BARU di schema
+-- public. Tanpa baris ini, revoke per-tabel di bawah hanya menutup 7
+-- tabel yang ada hari ini — tabel yang ditambahkan migrasi/plan
+-- berikutnya otomatis dapat `grant all` untuk anon & authenticated lagi,
+-- dan (lihat catatan di atas) kebocorannya muncul sebagai response 200
+-- dengan 0 baris, bukan error, jadi tidak otomatis kelihatan di test.
+-- Konsekuensinya: setiap tabel baru WAJIB punya grant eksplisit sendiri
+-- untuk role yang memang harus bisa mengaksesnya.
+alter default privileges in schema public revoke all on tables from anon, authenticated;
+
 revoke all on public.profiles from anon, authenticated;
 revoke all on public.student_identities from anon, authenticated;
 revoke all on public.sessions from anon, authenticated;
@@ -307,7 +386,14 @@ revoke all on public.escalations from anon, authenticated;
 revoke all on public.session_reports from anon, authenticated;
 
 grant select, update on public.profiles to authenticated;
-grant select on public.profiles to anon;
+-- Tidak ada grant select untuk anon di public.profiles: keempat policy
+-- profiles semuanya `to authenticated`, jadi grant untuk anon dulu cuma
+-- no-op yang menyesatkan (anon selalu dapat 0 baris, bukan error).
+-- Kalau nanti portal Siswa perlu menampilkan daftar kader yang tersedia,
+-- itu harus dirancang eksplisit di plan-nya sendiri — misal policy RLS
+-- sempit khusus anon dengan grant select hanya pada kolom yang aman,
+-- atau RPC `security definer` yang mengembalikan field terbatas —
+-- bukan mengandalkan grant tabel yang lebar.
 
 grant select, update on public.sessions to authenticated;
 grant select, insert on public.messages to authenticated;
@@ -316,7 +402,7 @@ grant select, insert, update on public.escalations to authenticated;
 grant select, update on public.session_reports to authenticated;
 
 -- -------------------------------------------------------------
--- 15. RLS POLICIES — profiles
+-- 16. RLS POLICIES — profiles
 -- -------------------------------------------------------------
 drop policy if exists "profiles: baca profil sendiri" on public.profiles;
 create policy "profiles: baca profil sendiri"
@@ -345,7 +431,7 @@ create policy "profiles: guru update semua"
   with check (public.is_guru());
 
 -- -------------------------------------------------------------
--- 16. RLS POLICIES — sessions
+-- 17. RLS POLICIES — sessions
 -- -------------------------------------------------------------
 drop policy if exists "sessions: kader baca sesi sendiri" on public.sessions;
 create policy "sessions: kader baca sesi sendiri"
@@ -374,7 +460,7 @@ create policy "sessions: guru update semua"
   with check (public.is_guru());
 
 -- -------------------------------------------------------------
--- 17. RLS POLICIES — messages
+-- 18. RLS POLICIES — messages
 -- -------------------------------------------------------------
 drop policy if exists "messages: kader baca sesi sendiri" on public.messages;
 create policy "messages: kader baca sesi sendiri"
@@ -414,7 +500,7 @@ create policy "messages: guru kirim"
   with check (sender_role = 'guru' and public.is_guru());
 
 -- -------------------------------------------------------------
--- 18. RLS POLICIES — session_assignments
+-- 19. RLS POLICIES — session_assignments
 -- -------------------------------------------------------------
 drop policy if exists "session_assignments: authenticated baca" on public.session_assignments;
 create policy "session_assignments: authenticated baca"
@@ -429,7 +515,7 @@ create policy "session_assignments: authenticated tulis"
   with check (changed_by = auth.uid());
 
 -- -------------------------------------------------------------
--- 19. RLS POLICIES — escalations
+-- 20. RLS POLICIES — escalations
 -- -------------------------------------------------------------
 drop policy if exists "escalations: kader buat di sesi sendiri" on public.escalations;
 create policy "escalations: kader buat di sesi sendiri"
@@ -464,7 +550,7 @@ create policy "escalations: guru update"
   with check (public.is_guru());
 
 -- -------------------------------------------------------------
--- 20. RLS POLICIES — session_reports (guru-only; student lewat service_role)
+-- 21. RLS POLICIES — session_reports (guru-only; student lewat service_role)
 -- -------------------------------------------------------------
 drop policy if exists "session_reports: guru baca" on public.session_reports;
 create policy "session_reports: guru baca"
@@ -480,7 +566,7 @@ create policy "session_reports: guru update"
   with check (public.is_guru());
 
 -- -------------------------------------------------------------
--- 21. Backfill profile untuk user yang sudah ada (jika ada)
+-- 22. Backfill profile untuk user yang sudah ada (jika ada)
 -- -------------------------------------------------------------
 insert into public.profiles (id, full_name, role)
 select

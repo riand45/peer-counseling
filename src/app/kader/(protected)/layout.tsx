@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { signout } from "@/lib/auth/actions";
 import { KaderShell } from "@/components/shells/KaderShell";
+import { Button } from "@/components/ui/Button";
 
 const navItems = [
   { href: "/kader", label: "Beranda", icon: "🏠" },
@@ -40,10 +42,28 @@ export default async function KaderLayout({ children }: { children: React.ReactN
             Akun kader Anda belum diverifikasi oleh Guru BK. Silakan tunggu
             atau hubungi Guru BK di sekolah Anda.
           </p>
+          <form action={signout} className="mt-4">
+            <Button type="submit" variant="ghost" className="w-full">
+              Keluar
+            </Button>
+          </form>
         </div>
       </main>
     );
   }
 
-  return <KaderShell navItems={navItems}>{children}</KaderShell>;
+  return (
+    <KaderShell
+      navItems={navItems}
+      primaryAction={
+        <form action={signout}>
+          <Button type="submit" variant="ghost" className="w-full">
+            Keluar
+          </Button>
+        </form>
+      }
+    >
+      {children}
+    </KaderShell>
+  );
 }

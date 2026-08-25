@@ -28,7 +28,7 @@ async function signupAs(role: AppRole, formData: FormData) {
   const fullName = (formData.get("full_name") as string) ?? "";
   const loginPath = role === "guru" ? "/guru/login" : "/kader/login";
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -41,6 +41,16 @@ async function signupAs(role: AppRole, formData: FormData) {
   }
 
   revalidatePath("/", "layout");
+
+  // Kalau konfirmasi email aktif di project ini, signUp() tidak
+  // mengembalikan session (dan tidak menulis cookie) — mengarahkan ke
+  // /kader atau /guru cuma akan langsung dibalikkan ke halaman login oleh
+  // gate layout tanpa penjelasan apa pun. Jadi kembalikan ke login dengan
+  // pesan "cek email dulu".
+  if (!data.session) {
+    redirect(`${loginPath}?message=confirm-email`);
+  }
+
   redirect(role === "guru" ? "/guru" : "/kader");
 }
 

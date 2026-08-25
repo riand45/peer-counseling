@@ -140,6 +140,22 @@ guru keep ordinary RLS (`assigned_to = auth.uid()` for kader,
 `public.is_guru()` for guru) since they're real authenticated Supabase users —
 unchanged in spirit from the existing `profiles` policies.
 
+> **Correction found during implementation (binding for future plans).**
+> Supabase provisions every project with `alter default privileges in schema
+> public grant all on tables to anon, authenticated`, so *omitting* a grant
+> statement does **not** by itself deny access — an unmatched RLS policy on a
+> table with an inherited default grant returns an empty result (200, 0 rows),
+> not a permission error. "Zero grants" above therefore has to be made true
+> explicitly. The shipped schema closes this with an explicit
+> `revoke all on <table> from anon, authenticated` before the intended
+> re-grants, on every table, **plus** a schema-wide
+> `alter default privileges in schema public revoke all on tables from anon,
+> authenticated` so future tables don't silently reopen it. Any future
+> migration adding a new table must include an explicit revoke for
+> `anon`/`authenticated` unless that table is genuinely meant to be broadly
+> readable — and note that the failure mode is a silent empty success, so a
+> naive "does it error?" test will not catch a regression here.
+
 A new `src/lib/supabase/service.ts` exports the service-role client, used only
 inside `"use server"` files.
 
