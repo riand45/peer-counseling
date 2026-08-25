@@ -214,6 +214,20 @@ and Guru sub-projects rather than three separate implementations.
 - `src/app/auth/callback/route.ts` stays, but its post-exchange redirect
   target becomes role-aware (`/kader` or `/guru`) instead of always `/`.
 
+> **Correction found during implementation (binding for future plans):**
+> guru accounts also require verification, mirroring kader exactly — this
+> section originally described guru as trusted-by-default with no gate,
+> which turned out to let anyone self-register at `/guru/login` straight
+> into full read access over every student's conversations. `is_guru()`
+> now requires `p.is_verified` in addition to `p.role = 'guru'`, and an
+> unverified guru sees the same kind of holding view at `/guru` that an
+> unverified kader sees at `/kader`. Bootstrap implication: no guru can
+> verify another guru until *one* guru account is verified manually via
+> the Supabase Dashboard (Table Editor → `profiles` → set
+> `is_verified = true`) — there is no other path to the first verified
+> guru. See `supabase/schema.sql`'s comments near `is_guru()` for the
+> exact mechanism.
+
 ## 6. Shared design system
 
 One Tailwind theme extension matching the tokens in
