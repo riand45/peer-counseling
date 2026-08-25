@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -72,9 +72,9 @@ export async function deleteTestUser(id: string): Promise<void> {
 export async function signInTestUser(
   email: string,
   password: string,
-): Promise<{ client: SupabaseClient }> {
+): Promise<{ client: SupabaseClient; session: Session | null }> {
   const anon = getAnonClient();
-  const { error } = await anon.auth.signInWithPassword({ email, password });
+  const { data, error } = await anon.auth.signInWithPassword({ email, password });
   if (error) throw error;
-  return { client: anon };
+  return { client: anon, session: data.session };
 }

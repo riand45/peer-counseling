@@ -54,18 +54,25 @@ describe("schema: signup trigger fills in profiles from user metadata", () => {
 
 describe("schema: kader/guru RLS scoping on sessions", () => {
   it("a kader can only see sessions assigned to them, not another kader's", async () => {
-    const kaderA = await createTestUser("kader", { verified: true });
-    const kaderB = await createTestUser("kader", { verified: true });
-    const localId = await createTestStudentIdentity();
     const service = getServiceClient();
-    const { data: session, error: sessionError } = await service
-      .from("sessions")
-      .insert({ student_local_id: localId, assigned_to: kaderA.id, topic: "akademik" })
-      .select("id")
-      .single();
-    expect(sessionError).toBeNull();
-
+    const cleanup: Array<() => Promise<void>> = [];
     try {
+      const kaderA = await createTestUser("kader", { verified: true });
+      cleanup.push(() => deleteTestUser(kaderA.id));
+      const kaderB = await createTestUser("kader", { verified: true });
+      cleanup.push(() => deleteTestUser(kaderB.id));
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const { data: session, error: sessionError } = await service
+        .from("sessions")
+        .insert({ student_local_id: localId, assigned_to: kaderA.id, topic: "akademik" })
+        .select("id")
+        .single();
+      expect(sessionError).toBeNull();
+      cleanup.push(async () => {
+        await service.from("sessions").delete().eq("id", session!.id);
+      });
+
       const { client: asKaderA } = await signInTestUser(kaderA.email, kaderA.password);
       const { data: seenByA } = await asKaderA
         .from("sessions")
@@ -80,25 +87,32 @@ describe("schema: kader/guru RLS scoping on sessions", () => {
         .eq("id", session!.id);
       expect(seenByB).toHaveLength(0);
     } finally {
-      await service.from("sessions").delete().eq("id", session!.id);
-      await deleteTestStudentIdentity(localId);
-      await deleteTestUser(kaderA.id);
-      await deleteTestUser(kaderB.id);
+      for (const fn of cleanup.reverse()) {
+        await fn();
+      }
     }
   });
 
   it("a guru can see any session", async () => {
-    const kader = await createTestUser("kader", { verified: true });
-    const guru = await createTestUser("guru", { verified: true });
-    const localId = await createTestStudentIdentity();
     const service = getServiceClient();
-    const { data: session } = await service
-      .from("sessions")
-      .insert({ student_local_id: localId, assigned_to: kader.id, topic: "bullying" })
-      .select("id")
-      .single();
-
+    const cleanup: Array<() => Promise<void>> = [];
     try {
+      const kader = await createTestUser("kader", { verified: true });
+      cleanup.push(() => deleteTestUser(kader.id));
+      const guru = await createTestUser("guru", { verified: true });
+      cleanup.push(() => deleteTestUser(guru.id));
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const { data: session, error: sessionError } = await service
+        .from("sessions")
+        .insert({ student_local_id: localId, assigned_to: kader.id, topic: "bullying" })
+        .select("id")
+        .single();
+      expect(sessionError).toBeNull();
+      cleanup.push(async () => {
+        await service.from("sessions").delete().eq("id", session!.id);
+      });
+
       const { client: asGuru } = await signInTestUser(guru.email, guru.password);
       const { data: seenByGuru } = await asGuru
         .from("sessions")
@@ -106,10 +120,9 @@ describe("schema: kader/guru RLS scoping on sessions", () => {
         .eq("id", session!.id);
       expect(seenByGuru).toHaveLength(1);
     } finally {
-      await service.from("sessions").delete().eq("id", session!.id);
-      await deleteTestStudentIdentity(localId);
-      await deleteTestUser(kader.id);
-      await deleteTestUser(guru.id);
+      for (const fn of cleanup.reverse()) {
+        await fn();
+      }
     }
   });
 });
