@@ -1,4 +1,5 @@
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
+import WebSocket from "ws";
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -12,7 +13,10 @@ export function getServiceClient(): SupabaseClient {
   return createClient(
     requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
     requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
-    { auth: { autoRefreshToken: false, persistSession: false } },
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+      realtime: { transport: WebSocket as unknown as typeof globalThis.WebSocket },
+    },
   );
 }
 
@@ -20,7 +24,10 @@ export function getAnonClient(): SupabaseClient {
   return createClient(
     requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
     requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    { auth: { autoRefreshToken: false, persistSession: false } },
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+      realtime: { transport: WebSocket as unknown as typeof globalThis.WebSocket },
+    },
   );
 }
 
@@ -77,4 +84,29 @@ export async function signInTestUser(
   const { data, error } = await anon.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return { client: anon, session: data.session };
+}
+
+export async function createTestSession(input: {
+  studentLocalId: string;
+  assignedTo?: string;
+  topic?: string;
+}): Promise<string> {
+  const service = getServiceClient();
+  const { data, error } = await service
+    .from("sessions")
+    .insert({
+      student_local_id: input.studentLocalId,
+      assigned_to: input.assignedTo ?? null,
+      topic: input.topic ?? "akademik",
+    })
+    .select("id")
+    .single();
+  if (error || !data) throw error ?? new Error("insert failed");
+  return data.id as string;
+}
+
+export async function deleteTestSession(id: string): Promise<void> {
+  const service = getServiceClient();
+  await service.from("messages").delete().eq("session_id", id);
+  await service.from("sessions").delete().eq("id", id);
 }
