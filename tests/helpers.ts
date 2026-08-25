@@ -1,0 +1,80 @@
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing env var ${name} — needed for integration tests`);
+  }
+  return value;
+}
+
+export function getServiceClient(): SupabaseClient {
+  return createClient(
+    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
+
+export function getAnonClient(): SupabaseClient {
+  return createClient(
+    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
+
+export async function createTestStudentIdentity(): Promise<string> {
+  const service = getServiceClient();
+  const { data, error } = await service
+    .from("student_identities")
+    .insert({ nickname: "Test Siswa" })
+    .select("id")
+    .single();
+  if (error || !data) throw error ?? new Error("insert failed");
+  return data.id as string;
+}
+
+export async function deleteTestStudentIdentity(id: string): Promise<void> {
+  const service = getServiceClient();
+  await service.from("student_identities").delete().eq("id", id);
+}
+
+let testUserCounter = 0;
+
+export async function createTestUser(
+  role: "kader" | "guru",
+  opts: { verified?: boolean } = {},
+): Promise<{ id: string; email: string; password: string }> {
+  const service = getServiceClient();
+  testUserCounter += 1;
+  const email = `test-${role}-${Date.now()}-${testUserCounter}@example.test`;
+  const password = "Test1234!";
+  const { data, error } = await service.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: `Test ${role}`, role },
+  });
+  if (error || !data.user) throw error ?? new Error("createUser failed");
+  const userId = data.user.id;
+  if (opts.verified) {
+    await service.from("profiles").update({ is_verified: true }).eq("id", userId);
+  }
+  return { id: userId, email, password };
+}
+
+export async function deleteTestUser(id: string): Promise<void> {
+  const service = getServiceClient();
+  await service.auth.admin.deleteUser(id);
+}
+
+export async function signInTestUser(
+  email: string,
+  password: string,
+): Promise<{ client: SupabaseClient }> {
+  const anon = getAnonClient();
+  const { error } = await anon.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return { client: anon };
+}
