@@ -23,7 +23,11 @@ export default async function KaderLayout({ children }: { children: React.ReactN
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "kader") {
+  if (!profile) {
+    redirect("/kader/login");
+  }
+
+  if (profile.role !== "kader") {
     redirect("/guru");
   }
 

@@ -20,7 +20,11 @@ export default async function GuruLayout({ children }: { children: React.ReactNo
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "guru") {
+  if (!profile) {
+    redirect("/guru/login");
+  }
+
+  if (profile.role !== "guru") {
     redirect("/kader");
   }
 
