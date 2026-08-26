@@ -11,7 +11,7 @@ export default async function GuruLoginPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-surface p-sm">
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-md">
         <h1 className="text-headline-md font-bold text-on-surface">Masuk sebagai Guru BK</h1>
         <p className="mt-1 text-body-md text-on-surface-variant">
           Untuk guru BK yang memantau dan mendampingi.
