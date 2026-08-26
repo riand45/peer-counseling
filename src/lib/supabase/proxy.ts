@@ -37,18 +37,27 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Contoh proteksi rute: arahkan user yang belum login ke /login.
-  // Sesuaikan atau hapus sesuai kebutuhan aplikasi Anda.
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
+  const { pathname } = request.nextUrl;
+
+  // Prefix yang boleh diakses TANPA login:
+  // - /            : landing 3 pilihan peran
+  // - /student     : area student anonymous (tanpa akun)
+  // - /kader/login : login/daftar kader
+  // - /guru/login  : login/daftar guru
+  // - /auth        : callback OAuth/email confirmation
+  const publicPrefixes = ["/student", "/kader/login", "/guru/login", "/auth"];
+  const isPublicPath =
+    pathname === "/" || publicPrefixes.some((prefix) => pathname.startsWith(prefix));
+
+  // Ini hanya redirect optimistis (belum login sama sekali). Kecocokan role
+  // (kader vs guru) dan status verifikasi dicek ulang dengan query DB di
+  // masing-masing layout — proxy TIDAK cukup untuk itu (lihat catatan Next.js
+  // 16: Server Actions di luar matcher proxy tidak ikut tersaring proxy).
+  if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = pathname.startsWith("/guru") ? "/guru/login" : "/kader/login";
     return NextResponse.redirect(url);
   }
 
-  // PENTING: kembalikan supabaseResponse apa adanya agar cookie tetap sinkron.
   return supabaseResponse;
 }

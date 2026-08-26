@@ -10,6 +10,18 @@
 
 **Spec:** [docs/superpowers/specs/2026-08-25-peer-counseling-foundation-design.md](../specs/2026-08-25-peer-counseling-foundation-design.md)
 
+> **Post-implementation correction — do not copy-paste Task 1's SQL below verbatim.**
+> The final whole-branch review found two Critical issues after all 7 tasks
+> were built and fixed: (1) `profiles`'s self-update policy let any user
+> self-promote to `role='guru'`/`is_verified=true`, closed by a `before
+> update` trigger; (2) guru signup had no verification gate, closed by
+> adding `and p.is_verified` to `is_guru()`. Task 1's Step 1 SQL below is
+> the pre-fix, historical version and does **not** include either fix. The
+> actual shipped `supabase/schema.sql` and its full rationale live in the
+> spec (§3, §5) and in this plan's SDD ledger at
+> `.superpowers/sdd/2026-08-25-peer-counseling-foundation/progress.md`.
+> Read the live file, not this step, if you need the real schema.
+
 ## Global Constraints
 
 - Next.js 16: `cookies()`/`headers()`/`params`/`searchParams` are fully async — always `await` them. No `middleware.ts` — routing gate logic lives in `src/proxy.ts` / `src/lib/supabase/proxy.ts` (already the case in this repo).

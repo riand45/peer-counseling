@@ -3,20 +3,25 @@ import { createClient } from "@/lib/supabase/server";
 
 /**
  * Menangani penukaran (exchange) kode auth dari email confirmation
- * atau OAuth menjadi session Supabase.
+ * atau OAuth menjadi session Supabase, lalu arahkan ke area sesuai role.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+      const next = profile?.role === "guru" ? "/guru" : "/kader";
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
+  return NextResponse.redirect(`${origin}/kader/login?error=auth_callback_error`);
 }
