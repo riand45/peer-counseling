@@ -19,6 +19,29 @@ export default async function LoginPage({
         )}
 
         <label className="flex flex-col gap-1 text-sm">
+          Nama lengkap
+          <input
+            id="full_name"
+            name="full_name"
+            type="text"
+            className="rounded border border-black/15 px-3 py-2 dark:border-white/20 dark:bg-transparent"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          Peran (untuk pendaftaran)
+          <select
+            id="role"
+            name="role"
+            defaultValue="kader"
+            className="rounded border border-black/15 px-3 py-2 dark:border-white/20 dark:bg-transparent"
+          >
+            <option value="kader">Kader</option>
+            <option value="guru">Guru</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
           Email
           <input
             id="email"

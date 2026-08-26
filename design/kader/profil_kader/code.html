@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kader Profile Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#005da7",
+                        "secondary-fixed": "#cde5ff",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-container-high": "#e7e8e9",
+                        "inverse-on-surface": "#f0f1f2",
+                        "inverse-surface": "#2e3132",
+                        "surface-dim": "#d9dadb",
+                        "primary-fixed-dim": "#a4c9ff",
+                        "primary-fixed": "#d4e3ff",
+                        "surface-bright": "#f8f9fa",
+                        "surface-tint": "#0060ac",
+                        "surface-container-low": "#f3f4f5",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-surface-variant": "#414751",
+                        "on-tertiary-fixed-variant": "#374951",
+                        "tertiary-fixed-dim": "#b6cad2",
+                        "on-primary-container": "#fdfcff",
+                        "inverse-primary": "#a4c9ff",
+                        "on-secondary-container": "#004b75",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-fixed-variant": "#004b74",
+                        "outline": "#717783",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#0b1e24",
+                        "outline-variant": "#c1c7d3",
+                        "tertiary-container": "#65777f",
+                        "tertiary": "#4c5f66",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d2e6ef",
+                        "surface-container": "#edeeef",
+                        "on-primary-fixed": "#001c39",
+                        "background": "#f8f9fa",
+                        "secondary-fixed-dim": "#94ccff",
+                        "on-surface": "#191c1d",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#001d32",
+                        "on-background": "#191c1d",
+                        "secondary": "#006398",
+                        "error": "#ba1a1a",
+                        "surface": "#f8f9fa",
+                        "secondary-container": "#6cbdfe",
+                        "on-tertiary-container": "#fafdff",
+                        "primary-container": "#2976c7",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "20px",
+                        "sm": "16px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "base": "4px",
+                        "margin-desktop": "auto",
+                        "margin-mobile": "16px",
+                        "max-width-content": "1200px",
+                        "md": "24px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex flex-col p-md gap-xs bg-surface-container-low dark:bg-surface-container-lowest fixed left-0 top-0 h-full w-64 border-r border-outline-variant z-40">
+<div class="flex items-center gap-3 mb-xl">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="spa" style="font-variation-settings: 'FILL' 1;">spa</span>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Ruang Cerita</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Safe Space for Everyone</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Beranda</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-md text-label-md">Ruang Chat</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+<span class="font-label-md text-label-md">Jurnal</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-md text-label-md">Materi</span>
+</a>
+<!-- Active (Profil) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl font-bold transition-all scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</a>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md rounded-xl py-3 px-4 mt-auto mb-4 hover:opacity-90 transition-opacity w-full text-center">
+            Buka Sesi Chat
+        </button>
+<div class="flex flex-col gap-2 pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface sticky top-0 z-30 border-b border-outline-variant flex justify-between items-center w-full px-margin-mobile md:px-lg h-16">
+<div class="md:hidden flex items-center">
+<span class="font-headline-md text-headline-md font-bold text-primary">Ruang Cerita</span>
+</div>
+<div class="hidden md:flex items-center">
+<h2 class="font-headline-md text-headline-md text-on-surface">Manajemen Profil</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors active:opacity-80">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<img alt="User profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant ml-2" data-alt="A small circular avatar placeholder image showing a friendly peer counselor face in a bright, modern, minimalist setting. Soft lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbHy8UarjQ0WE2wM66VVW--EVG-ZidrFBnMIPc7GL-Wf6Dh6ypIJ4nzw6Mx0MgAipwSk-rcYAlV4nlEVxMH-nmcbQewJJYjPI13MXTqDHNuWCalyF3BOBghcC0Nn_AsVeREcQtwQOzoKdScEyGeNiEmjwbogWaZPjc3F_PAr1LLu092atrzm9zlF0ADw5DU9JoUEkdpTlHHDGD37NGzIr-DQF6NLxsTcCsxCPbaCF-bzBcw_pE6YMedg"/>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 p-margin-mobile md:p-lg max-w-max-width-content mx-auto w-full pb-24 md:pb-lg">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+<!-- Left Column: Identity & Status -->
+<div class="lg:col-span-1 flex flex-col gap-md">
+<!-- Profile Header Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant text-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-24 bg-primary-fixed opacity-50 rounded-t-xl"></div>
+<div class="relative z-10 mt-8 flex flex-col items-center">
+<div class="relative">
+<img class="w-24 h-24 rounded-full object-cover border-4 border-surface-container-lowest shadow-sm mb-4" data-alt="A close-up portrait of an approachable young adult male peer counselor smiling warmly. He wears casual modern clothing. Soft, diffused lighting creates a welcoming 'Safe Space' atmosphere. The background is a bright, minimalist environment. The mood is calm and empathetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBicgvr9AeXuN4p7lqb9B2hbGSyBDesq6YY8b4rV_aWTcBeuRr0mgt-zR5AdlGvVMA7gs3PychPGyrtljXl8VEFM1pmeA5qYc2X_uQHCuU5wR5-zBZAKKqhDfC4n_DkXLeCMkCDxQoW7SqbonSndQHmFqBXOEmRIoaPd4bm8qCYfyWM04vjcgVrnRQm9u69HNPo0DjrVxV3BtZTQYtr_E_ZHx7ts2rMGxBO6yt9f7oIaXlTUEYQR2q4Yg"/>
+<div class="absolute bottom-4 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-surface-container-lowest"></div>
+</div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-1">Kak Raka</h2>
+<p class="font-label-md text-label-md text-primary bg-primary-fixed-dim px-3 py-1 rounded-full inline-block mb-4">Kader Aktif</p>
+<p class="font-body-sm text-label-sm text-on-surface-variant bg-surface-container px-4 py-3 rounded-lg mt-2 text-left w-full flex gap-3 items-start">
+<span class="material-symbols-outlined text-outline mt-0.5 text-lg" data-icon="info">info</span>
+                                Profil ini adalah apa yang dilihat oleh adik kelas saat memilih teman cerita.
+                            </p>
+</div>
+</div>
+<!-- Status Selection Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="online_prediction">online_prediction</span>
+                            Status Kehadiran
+                        </h3>
+<div class="flex flex-col gap-3">
+<label class="flex items-center gap-3 p-3 rounded-lg border border-primary bg-primary-fixed opacity-80 cursor-pointer">
+<input checked="" class="text-primary focus:ring-primary h-5 w-5 border-outline-variant" name="status" type="radio"/>
+<span class="font-label-md text-label-md text-on-surface">Available (Siap Chat)</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors">
+<input class="text-primary focus:ring-primary h-5 w-5 border-outline-variant" name="status" type="radio"/>
+<span class="font-label-md text-label-md text-on-surface-variant">Busy (Sedang Sesi)</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors">
+<input class="text-primary focus:ring-primary h-5 w-5 border-outline-variant" name="status" type="radio"/>
+<span class="font-label-md text-label-md text-on-surface-variant">Offline</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Right Column: Details -->
+<div class="lg:col-span-2 flex flex-col gap-md">
+<!-- Bio Singkat Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="history_edu">history_edu</span>
+                                Bio Singkat
+                            </h3>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-outline-variant text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+                                Edit Bio
+                            </button>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 border border-surface-variant relative">
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                "Teman cerita yang asik untuk bahas masalah pertemanan, struggle belajar, atau sekadar butuh telinga untuk mendengar tanpa menghakimi. Yuk, ngobrol santai!"
+                            </p>
+<span class="absolute bottom-2 right-2 font-label-sm text-label-sm text-outline">120/150</span>
+</div>
+</div>
+<!-- Topik Konsultasi Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="forum">forum</span>
+                                Topik Konsultasi Saya
+                            </h3>
+<button class="text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Pilih topik yang paling kamu kuasai untuk membantu adik kelas merasa lebih terhubung.</p>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-4 py-2 rounded-full font-label-md text-label-md border border-outline-variant shadow-sm">
+                                Pertemanan
+                                <button class="hover:text-error transition-colors flex items-center ml-1"><span class="material-symbols-outlined text-sm" data-icon="close">close</span></button>
+</div>
+<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-4 py-2 rounded-full font-label-md text-label-md border border-outline-variant shadow-sm">
+                                Akademik
+                                <button class="hover:text-error transition-colors flex items-center ml-1"><span class="material-symbols-outlined text-sm" data-icon="close">close</span></button>
+</div>
+<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-4 py-2 rounded-full font-label-md text-label-md border border-outline-variant shadow-sm">
+                                Keluarga
+                                <button class="hover:text-error transition-colors flex items-center ml-1"><span class="material-symbols-outlined text-sm" data-icon="close">close</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden bg-surface rounded-t-xl border-t border-outline-variant shadow-lg transition-all duration-200 ease-in-out">
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant w-16 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant w-16 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-sm text-label-sm mt-1">Chat</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant w-16 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-sm text-label-sm mt-1">Materi</span>
+</a>
+<!-- Active (Profil) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profil</span>
+</a>
+</nav>
+</body></html>

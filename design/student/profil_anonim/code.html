@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profil Anonim - Ruang Cerita</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;700&amp;family=Inter:wght@400;500;700&amp;family=Public+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {outline: "#737784", "on-secondary-container": "#606569", "on-primary-fixed": "#001946", "on-tertiary-fixed": "#211b00", "on-secondary-fixed": "#171c20", "on-primary-container": "#e7ebff", "on-secondary-fixed-variant": "#42474b", "on-secondary": "#ffffff", "surface-dim": "#dbdadb", "on-surface": "#1b1c1d", "on-tertiary-fixed-variant": "#524600", "on-error": "#ffffff", "primary-fixed-dim": "#b1c5ff", primary: "#094cb2", "outline-variant": "#c3c6d5", "tertiary-fixed-dim": "#dcc661", "inverse-on-surface": "#f2f0f1", "surface-variant": "#e3e2e3", "inverse-surface": "#303031", "surface-container-high": "#e9e8e9", "surface-container-lowest": "#ffffff", "primary-container": "#3366cc", "tertiary-container": "#bfab49", "surface-container": "#efedee", error: "#ba1a1a", "on-background": "#1b1c1d", "inverse-primary": "#b1c5ff", "secondary-fixed-dim": "#c2c7cc", "primary-fixed": "#d9e2ff", "error-container": "#ffdad6", "on-tertiary-container": "#4a3f00", surface: "#faf9fa", "on-error-container": "#93000a", background: "#faf9fa", "secondary-container": "#dfe3e8", "surface-container-low": "#f5f3f4", "surface-container-highest": "#e3e2e3", "on-primary-fixed-variant": "#00419d", tertiary: "#6d5e00", "surface-tint": "#2259bf", "surface-bright": "#faf9fa", "tertiary-fixed": "#f9e37a", "on-tertiary": "#ffffff", "on-surface-variant": "#434653", secondary: "#5a5f63", "secondary-fixed": "#dfe3e8", "on-primary": "#ffffff"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}, spacing: {"max-width-content": "1200px", md: "24px", "margin-desktop": "auto", "margin-mobile": "16px", gutter: "20px", lg: "40px", sm: "16px", xs: "8px", xl: "64px", base: "4px"}, fontFamily: {"headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], headline: ["Noto Serif"], display: ["Noto Serif"], body: ["Inter"], label: ["Public Sans"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600"}], "headline-md": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "500"}]}}}};</script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .ambient-shadow {
+            box-shadow: 0 20px 40px -10px rgba(0, 93, 167, 0.08);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim docked full-width top-0 border-b border-outline-variant dark:border-outline flat no shadows z-40">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-lg h-16 max-w-max-width-content mx-auto">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Button (Visible only on md:hidden) -->
+<button class="md:hidden text-on-surface hover:bg-surface-variant p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Ruang Cerita</span>
+</div>
+<div class="flex items-center gap-2">
+<button aria-label="notifications" class="p-2 rounded-full text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button aria-label="help" class="p-2 rounded-full text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden w-full max-w-max-width-content mx-auto relative">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col p-md gap-xs fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant z-30 overflow-y-auto">
+<!-- User Header Snippet -->
+<div class="mb-6 px-4 py-3">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container mb-3">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Ruang Cerita</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Safe Space for Everyone</p>
+</div>
+<!-- CTA -->
+<button class="mb-6 w-full bg-primary text-on-primary py-3 px-4 rounded-xl font-label-md text-label-md flex justify-center items-center gap-2 hover:bg-surface-tint transition-colors ambient-shadow">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                Buka Sesi Chat
+            </button>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 hover:scale-100 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Beranda</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 hover:scale-100 duration-200" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md">Ruang Chat</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 hover:scale-100 duration-200" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label-md text-label-md">Jurnal</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all scale-95 hover:scale-100 duration-200" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-md text-label-md">Materi</span>
+</a>
+<!-- Active Nav -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl font-bold transition-all scale-100 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</a>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto pt-4 border-t border-outline-variant flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-error hover:bg-error-container rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto px-margin-mobile py-lg md:px-lg md:py-xl md:ml-64 w-full h-[calc(100vh-4rem)] pb-24 md:pb-xl relative bg-[#F8F9FA]">
+<!-- Decorative background blobs -->
+<div class="absolute top-0 right-0 w-96 h-96 bg-primary-container opacity-20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 w-64 h-64 bg-secondary-container opacity-20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+<div class="max-w-3xl mx-auto relative z-10">
+<header class="mb-10 text-center md:text-left">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background mb-2">Profil Anonim</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl mx-auto md:mx-0">
+                        Identitasmu tetap rahasia. Kamu bisa mengubah nama panggilanmu di sini untuk digunakan dalam ruang chat.
+                    </p>
+</header>
+<div class="bg-surface border border-outline-variant rounded-[24px] p-md md:p-lg ambient-shadow relative overflow-hidden">
+<!-- Inner decoration -->
+<div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary-fixed to-transparent opacity-50"></div>
+<div class="relative flex flex-col md:flex-row items-center md:items-start gap-8 mt-4">
+<!-- Avatar Section -->
+<div class="flex flex-col items-center gap-4">
+<div class="relative group cursor-pointer">
+<div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-secondary-fixed flex items-center justify-center overflow-hidden border-4 border-surface ambient-shadow">
+<img class="w-full h-full object-cover" data-alt="A softly rendered, stylized 3D illustration of a friendly, anonymous animal avatar, perhaps a gentle bear or a wise owl, set against a soothing pastel blue background. The aesthetic is modern, comforting, and minimalist, designed to evoke psychological safety and warmth in a peer counseling app context. High key lighting, soft shadows, rounded shapes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6uTQ6EuaRCykfLtvL-LkadTjP9qIV2utqGcsYjJVcV3rFlJQiHE1pVYAjnE2gjLgAEva6rSV4HFguUFwgJmA1bZVgwQrNk-xQfS2d6U02hyKS7cuVQc21NFql2O4gxRWY3tOLldzB_TRFb3Uc3sve88MokKz01AxmZFEBO0g7-r7YWzAM3mBhTsa5FE5f_71sTJoaibK9LfupdxnZ4uaZzOSaWv15WwlGmg1iwiGVPTq68PvkLNnEYQ"/>
+</div>
+<button aria-label="Ganti Avatar" class="absolute bottom-0 right-0 md:bottom-2 md:right-2 w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center border-2 border-surface hover:scale-110 transition-transform ambient-shadow">
+<span class="material-symbols-outlined text-sm">cycle</span>
+</button>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-highest px-3 py-1 rounded-full">
+                                Avatar acak
+                            </span>
+</div>
+<!-- Profile Details -->
+<div class="flex-1 w-full mt-4 md:mt-2">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mb-6">
+<div class="flex justify-between items-start mb-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Nama Panggilan (Anonim)</label>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="flex items-center justify-between group">
+<h2 class="font-headline-md text-headline-md text-on-surface">Sahabat Langit</h2>
+<button aria-label="Edit nama" class="text-primary p-2 rounded-full hover:bg-primary-fixed transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<!-- Inline Edit Form (Hidden by default, shown for demonstration) -->
+<div class="mt-4 hidden" id="edit-name-form">
+<div class="flex gap-2">
+<input class="flex-1 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-on-surface" type="text" value="Sahabat Langit"/>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md hover:bg-surface-tint transition-colors">Simpan</button>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-2">Pilih nama yang tidak mengandung identitas asli.</p>
+</div>
+</div>
+<!-- Safety Guarantee Card -->
+<div class="bg-secondary-fixed/30 border border-secondary-fixed rounded-xl p-5 flex items-start gap-4">
+<div class="p-2 bg-secondary-fixed rounded-full text-secondary">
+<span class="material-symbols-outlined">shield_lock</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-secondary-container mb-1">Zona Aman &amp; Rahasia</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">
+                                        Kami tidak menyimpan data pribadi Anda di profil ini. Konselor atau teman sebaya hanya akan melihat avatar dan nama panggilan di atas.
+                                    </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Actions -->
+<div class="mt-8 flex flex-col md:flex-row gap-4 justify-center">
+<button class="px-6 py-3 rounded-xl border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">history</span>
+                         Riwayat Aktivitas
+                     </button>
+<button class="px-6 py-3 rounded-xl bg-error-container text-on-error-container font-label-md text-label-md hover:bg-[#ffc2bc] transition-colors flex justify-center items-center gap-2 md:ml-auto">
+<span class="material-symbols-outlined">delete_forever</span>
+                         Hapus Akun Anonim
+                     </button>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden bg-surface dark:bg-surface-container-lowest docked full-width bottom-0 rounded-t-xl border-t border-outline-variant shadow-lg transition-all duration-200 ease-in-out">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant px-5 py-1 rounded-full w-16" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1 text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant px-5 py-1 rounded-full w-16" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-sm text-label-sm mt-1 text-[10px]">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant px-5 py-1 rounded-full w-16" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-sm text-label-sm mt-1 text-[10px]">Materi</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1 w-16" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm mt-1 text-[10px] font-bold">Profil</span>
+</a>
+</nav>
+<script>
+        // Simple interaction for the edit button
+        document.addEventListener('DOMContentLoaded', () => {
+            const editButtons = document.querySelectorAll('button[aria-label="Edit nama"]');
+            const editForm = document.getElementById('edit-name-form');
+            
+            editButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    editForm.classList.toggle('hidden');
+                    if(!editForm.classList.contains('hidden')){
+                        editForm.querySelector('input').focus();
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

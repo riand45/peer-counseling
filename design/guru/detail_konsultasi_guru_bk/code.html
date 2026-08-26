@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detail Konsultasi - Mode Pantau</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#414751",
+                        "primary-container": "#2976c7",
+                        "on-background": "#191c1d",
+                        "secondary-container": "#6cbdfe",
+                        "surface": "#f8f9fa",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#004b75",
+                        "secondary": "#006398",
+                        "on-primary-fixed": "#001c39",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "on-tertiary-container": "#fafdff",
+                        "surface-bright": "#f8f9fa",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-high": "#e7e8e9",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#a4c9ff",
+                        "primary-fixed": "#d4e3ff",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-secondary-fixed": "#001d32",
+                        "on-primary": "#ffffff",
+                        "outline": "#717783",
+                        "on-tertiary-fixed": "#0b1e24",
+                        "secondary-fixed": "#cde5ff",
+                        "outline-variant": "#c1c7d3",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#fdfcff",
+                        "surface-variant": "#e1e3e4",
+                        "error": "#ba1a1a",
+                        "surface-container": "#edeeef",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-tint": "#0060ac",
+                        "primary": "#005da7",
+                        "tertiary-fixed-dim": "#b6cad2",
+                        "secondary-fixed-dim": "#94ccff",
+                        "tertiary-container": "#65777f",
+                        "on-surface": "#191c1d",
+                        "background": "#f8f9fa",
+                        "inverse-surface": "#2e3132",
+                        "inverse-primary": "#a4c9ff",
+                        "on-secondary-fixed-variant": "#004b74",
+                        "tertiary": "#4c5f66",
+                        "on-tertiary-fixed-variant": "#374951",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#d2e6ef"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "auto",
+                        "lg": "40px",
+                        "max-width-content": "1200px",
+                        "xs": "8px",
+                        "gutter": "20px",
+                        "xl": "64px",
+                        "sm": "16px",
+                        "margin-mobile": "16px",
+                        "base": "4px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface border-b border-outline-variant flex justify-between items-center w-full px-margin-mobile md:px-lg h-16 max-w-max-width-content mx-auto z-10 sticky top-0">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface hover:bg-surface-variant p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Ruang Cerita</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A small circular avatar placeholder image showing a subtle, soft-focus generic human silhouette against a pale blue background. Lighting is soft and even, suggesting a calm, modern profile icon. The aesthetic is minimal, clean, and unobtrusive, fitting a safe space counseling app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoHMcVxq-oxC48DWtmu_q5W1_pRh9WCz4T-mXQSepozRFWHsKhGnoV9Jk2diree9I1jKBBl5-WOMtYiz-vG_Mk124fiQvps8Ghe1J9LAd-0yFu7og0o0zLExXSOzWqQLQfPAhuS1Fr2e8f9yax4lZiEJaykXzV3BvPbpotHlRErE88r0xEOHqwvELxafOBof53Y9fxeXjoOVpfT2wL8Ul98yI4ifQhFovdQAoBzyyxIcBxJ-pxDs8_lQ"/>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden w-full max-w-max-width-content mx-auto relative">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex flex-col p-md gap-xs bg-surface-container-low border-r border-outline-variant fixed left-0 top-0 h-full w-64 pt-20 z-0">
+<div class="mb-lg px-4">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Ruang Cerita</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Safe Space for Everyone</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-2">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Beranda</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl font-bold transition-all duration-200" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md">Ruang Chat</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label-md text-label-md">Jurnal</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-md text-label-md">Materi</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="mt-auto">
+<ul class="space-y-2 mb-4">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</li>
+</ul>
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:bg-surface-tint transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                     Buka Sesi Chat
+                 </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 w-full flex flex-col md:ml-64 p-margin-mobile md:p-md gap-md overflow-y-auto">
+<!-- Pantau Notice -->
+<div class="bg-secondary-container text-on-secondary-container px-md py-sm rounded-lg flex items-center gap-3 border border-secondary-fixed shadow-sm">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">visibility</span>
+<p class="font-label-md text-label-md"><strong>Mode Pantau:</strong> Guru/BK dapat melihat seluruh isi percakapan.</p>
+</div>
+<!-- Back Link -->
+<div>
+<a class="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm mb-2" href="#">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Kembali ke Daftar Konsultasi
+                </a>
+</div>
+<!-- Grid Layout -->
+<div class="flex flex-col lg:flex-row gap-md lg:gap-lg h-full pb-24 md:pb-0">
+<!-- Left Column: Info & Actions -->
+<aside class="w-full lg:w-1/3 flex flex-col gap-md">
+<!-- Info Card -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant p-md shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Detail Sesi</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">ID: <span class="font-mono">RC-2023-1049</span></p>
+<div class="space-y-4">
+<div>
+<h4 class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Pengguna (Anonim)</h4>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold font-headline-md">S</div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Siswa Anonim #492</p>
+</div>
+</div>
+<div>
+<h4 class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Kader Sebaya</h4>
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a smiling young adult counselor. They are wearing casual, approachable clothing (like a soft knit sweater). The background is a blurred, bright counseling room with a plant, conveying warmth and safety. Soft natural lighting, highly detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjr_HWBaoF5bhNTLNlKTRLk2NIzpeMsNeSc8fQaR5JqaS2sxaccrVPaFoO0LdlO2byJjIqSidS5zkJG--5AsPL4Aaqm8-iVkN37C74dLqcoxNDO0miIVbEBgVGEvBmZ2qX21ApGJXySRRYh2hHwkMAFBqKkTtwO-bFKVitCOPj2glNVityZjMnrkC7-yIm7y6CPGjDoUV7n-TwMB1EVgNC4ip8yGqtpj-V-XGYlL_5HnSlslFO4p1riQ"/>
+<p class="font-body-md text-body-md text-on-surface font-medium">Budi Santoso</p>
+</div>
+</div>
+<div>
+<h4 class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Topik</h4>
+<span class="inline-block bg-tertiary-fixed text-on-tertiary-fixed-variant px-3 py-1 rounded-full font-label-sm text-label-sm">Kecemasan Akademik</span>
+</div>
+<div>
+<h4 class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Status</h4>
+<span class="inline-flex items-center gap-1.5 bg-error-container text-on-error-container px-3 py-1 rounded-full font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+                                    Aktif
+                                </span>
+</div>
+</div>
+</div>
+<!-- Actions Card -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant p-md shadow-sm">
+<h3 class="font-label-md text-label-md text-on-surface mb-sm">Tindakan Guru/BK</h3>
+<div class="flex flex-col gap-3">
+<button class="w-full py-2.5 px-4 bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:bg-surface-tint transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">front_hand</span>
+                                Ambil Alih Percakapan
+                            </button>
+<button class="w-full py-2.5 px-4 bg-secondary-fixed text-on-secondary-fixed-variant rounded-xl font-label-md text-label-md hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+                                Alihkan ke Profesional
+                            </button>
+<button class="w-full py-2.5 px-4 border border-outline text-on-surface hover:bg-surface-variant rounded-xl font-label-md text-label-md transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+                                Tandai Selesai
+                            </button>
+<button class="w-full py-2.5 px-4 border border-error text-error hover:bg-error-container rounded-xl font-label-md text-label-md transition-colors flex items-center justify-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+                                Hapus Log
+                            </button>
+</div>
+</div>
+</aside>
+<!-- Right Column: Chat Transcript -->
+<section class="w-full lg:w-2/3 flex flex-col bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm h-[600px] lg:h-auto overflow-hidden">
+<!-- Chat Header -->
+<div class="p-sm md:p-md border-b border-outline-variant bg-surface flex justify-between items-center">
+<div>
+<h2 class="font-label-md text-label-md text-on-surface">Transkrip Percakapan</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Dimulai: 10 Okt 2023, 14:30 WIB</p>
+</div>
+<span class="material-symbols-outlined text-outline">forum</span>
+</div>
+<!-- Chat Messages Area -->
+<div class="flex-1 overflow-y-auto p-md space-y-6 bg-surface-bright">
+<!-- Counselor Message -->
+<div class="flex items-end gap-2 max-w-[85%]">
+<img class="w-8 h-8 rounded-full object-cover mb-1" data-alt="A professional headshot of a smiling young adult counselor. They are wearing casual, approachable clothing (like a soft knit sweater). The background is a blurred, bright counseling room with a plant, conveying warmth and safety. Soft natural lighting, highly detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNhBk-dfCU2GUBkEB_06JmDTXtkmT1-xicBz1ucxFuKZpbYR1D0bWsluHxreLjuHJe90oACLoiK0tMuNOuSR-6rftgSVcMx1cAQG830kMegcdvhoXNhzmenD9drVXLGsGeTste9gurDEEIB2HtFe4cCqewCU3-o_Vsk5UKv9qpqw0Q2v6FNymRAnlD0kaISO_ttSh0kFtcOylli8GbbB-FIdVknl_tMs_Wk3M5U-wBYF1fIE8_8VonPw"/>
+<div class="bg-surface-container-high text-on-surface px-4 py-3 rounded-2xl rounded-bl-none font-body-md text-body-md">
+<p>Halo! Aku Budi dari Ruang Cerita. Ada yang bisa aku bantu atau ingin kamu ceritakan hari ini?</p>
+<span class="text-[10px] text-on-surface-variant block mt-1 text-right">14:30</span>
+</div>
+</div>
+<!-- Student Message -->
+<div class="flex items-end gap-2 max-w-[85%] ml-auto justify-end">
+<div class="bg-primary text-on-primary px-4 py-3 rounded-2xl rounded-br-none font-body-md text-body-md shadow-sm">
+<p>Hai kak Budi. Aku ngerasa cemas banget akhir-akhir ini sama ujian tryout. Aku takut nilaiku jelek dan ngecewain orang tua.</p>
+<span class="text-[10px] text-primary-fixed-dim block mt-1 text-right">14:35</span>
+</div>
+</div>
+<!-- Counselor Message -->
+<div class="flex items-end gap-2 max-w-[85%]">
+<img class="w-8 h-8 rounded-full object-cover mb-1" data-alt="A professional headshot of a smiling young adult counselor. They are wearing casual, approachable clothing (like a soft knit sweater). The background is a blurred, bright counseling room with a plant, conveying warmth and safety. Soft natural lighting, highly detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANpW5JKSy5kSVxXYY_x7dXFNIo-81wGvEYkX2hB6kjNE84KkrL6RoAs40_pdipXEErYGt8f3uDTzcsmVsqa4mIF7vho1USMDHE-Ow2dZ01IlE6FbFROGm8qTImQlC-3hXQhxqMNGGStC_GmRoD-9F4DEZsmr0YJq54mDjj4FxIYpnlnCotfqGpgJ7_PntLNK_dzIpQmYUU5iqYbTulLtUdIRKrEB9N5EcEUvEGbYrDi4WYFftzratRbw"/>
+<div class="bg-surface-container-high text-on-surface px-4 py-3 rounded-2xl rounded-bl-none font-body-md text-body-md">
+<p>Wajar banget merasa cemas menjelang ujian penting, apalagi kalau kita punya harapan besar. Boleh ceritain lebih lanjut, apa yang paling bikin kamu takut?</p>
+<span class="text-[10px] text-on-surface-variant block mt-1 text-right">14:36</span>
+</div>
+</div>
+<!-- System Message -->
+<div class="flex justify-center my-4">
+<span class="bg-surface-variant text-on-surface-variant text-[11px] px-3 py-1 rounded-full">Siswa sedang mengetik...</span>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden bg-surface border-t border-outline-variant rounded-t-xl shadow-lg pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant transition-all duration-200 ease-in-out p-1 rounded-lg" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-label-sm text-label-sm mt-1 font-bold">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant transition-all duration-200 ease-in-out p-1 rounded-lg" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-sm text-label-sm mt-1">Materi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant transition-all duration-200 ease-in-out p-1 rounded-lg" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profil</span>
+</a>
+</nav>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</body></html>

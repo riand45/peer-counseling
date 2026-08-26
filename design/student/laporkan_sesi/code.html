@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Report Consultation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;700&amp;family=Inter:wght@400;500;700&amp;family=Public+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {outline: "#737784", "on-secondary-container": "#606569", "on-primary-fixed": "#001946", "on-tertiary-fixed": "#211b00", "on-secondary-fixed": "#171c20", "on-primary-container": "#e7ebff", "on-secondary-fixed-variant": "#42474b", "on-secondary": "#ffffff", "surface-dim": "#dbdadb", "on-surface": "#1b1c1d", "on-tertiary-fixed-variant": "#524600", "on-error": "#ffffff", "primary-fixed-dim": "#b1c5ff", primary: "#094cb2", "outline-variant": "#c3c6d5", "tertiary-fixed-dim": "#dcc661", "inverse-on-surface": "#f2f0f1", "surface-variant": "#e3e2e3", "inverse-surface": "#303031", "surface-container-high": "#e9e8e9", "surface-container-lowest": "#ffffff", "primary-container": "#3366cc", "tertiary-container": "#bfab49", "surface-container": "#efedee", error: "#ba1a1a", "on-background": "#1b1c1d", "inverse-primary": "#b1c5ff", "secondary-fixed-dim": "#c2c7cc", "primary-fixed": "#d9e2ff", "error-container": "#ffdad6", "on-tertiary-container": "#4a3f00", surface: "#faf9fa", "on-error-container": "#93000a", background: "#faf9fa", "secondary-container": "#dfe3e8", "surface-container-low": "#f5f3f4", "surface-container-highest": "#e3e2e3", "on-primary-fixed-variant": "#00419d", tertiary: "#6d5e00", "surface-tint": "#2259bf", "surface-bright": "#faf9fa", "tertiary-fixed": "#f9e37a", "on-tertiary": "#ffffff", "on-surface-variant": "#434653", secondary: "#5a5f63", "secondary-fixed": "#dfe3e8", "on-primary": "#ffffff"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}, spacing: {"max-width-content": "1200px", md: "24px", "margin-desktop": "auto", "margin-mobile": "16px", gutter: "20px", lg: "40px", sm: "16px", xs: "8px", xl: "64px", base: "4px"}, fontFamily: {"headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], headline: ["Noto Serif"], display: ["Noto Serif"], body: ["Inter"], label: ["Public Sans"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600"}], "headline-md": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "500"}]}}}};</script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8F9FA; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .ambient-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 93, 167, 0.08);
+        }
+        /* Custom radio button styling */
+        input[type="radio"]:checked + div {
+            border-color: #005da7;
+            background-color: #f8f9fa;
+        }
+        input[type="radio"]:checked + div .radio-inner {
+            background-color: #005da7;
+            transform: scale(1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen flex items-center justify-center p-margin-mobile">
+<!-- Main Container -->
+<main class="w-full max-w-lg mx-auto">
+<!-- Form View -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant p-md ambient-shadow glass-card transition-all duration-300" id="reportForm">
+<header class="flex items-start justify-between mb-lg">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-xs">Laporkan Sesi</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Laporanmu akan ditinjau oleh pihak sekolah secara rahasia.</p>
+</div>
+<button aria-label="Tutup" class="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</header>
+<form onsubmit="event.preventDefault(); showConfirmation();">
+<fieldset class="mb-lg">
+<legend class="sr-only">Alasan Pelaporan</legend>
+<p class="font-label-md text-label-md text-on-surface mb-sm">Pilih alasan laporan (wajib)</p>
+<div class="space-y-sm">
+<!-- Reason 1 -->
+<label class="cursor-pointer flex items-center group relative block">
+<input class="peer sr-only" name="reason" required="" type="radio" value="uncomfortable"/>
+<div class="w-full flex items-center gap-sm p-sm rounded-lg border border-outline-variant group-hover:border-primary/50 transition-colors bg-surface-container-lowest">
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary flex items-center justify-center shrink-0">
+<div class="radio-inner w-2.5 h-2.5 rounded-full bg-transparent transform scale-0 transition-transform duration-200"></div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Saya merasa tidak nyaman</span>
+</div>
+</label>
+<!-- Reason 2 -->
+<label class="cursor-pointer flex items-center group relative block">
+<input class="peer sr-only" name="reason" type="radio" value="unresponsive"/>
+<div class="w-full flex items-center gap-sm p-sm rounded-lg border border-outline-variant group-hover:border-primary/50 transition-colors bg-surface-container-lowest">
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary flex items-center justify-center shrink-0">
+<div class="radio-inner w-2.5 h-2.5 rounded-full bg-transparent transform scale-0 transition-transform duration-200"></div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Kader tidak merespons</span>
+</div>
+</label>
+<!-- Reason 3 -->
+<label class="cursor-pointer flex items-center group relative block">
+<input class="peer sr-only" name="reason" type="radio" value="need_teacher"/>
+<div class="w-full flex items-center gap-sm p-sm rounded-lg border border-outline-variant group-hover:border-primary/50 transition-colors bg-surface-container-lowest">
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary flex items-center justify-center shrink-0">
+<div class="radio-inner w-2.5 h-2.5 rounded-full bg-transparent transform scale-0 transition-transform duration-200"></div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Saya ingin bantuan guru/BK</span>
+</div>
+</label>
+<!-- Reason 4 -->
+<label class="cursor-pointer flex items-center group relative block">
+<input class="peer sr-only" name="reason" type="radio" value="other"/>
+<div class="w-full flex flex-col gap-sm p-sm rounded-lg border border-outline-variant group-hover:border-primary/50 transition-colors bg-surface-container-lowest">
+<div class="flex items-center gap-sm">
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary flex items-center justify-center shrink-0">
+<div class="radio-inner w-2.5 h-2.5 rounded-full bg-transparent transform scale-0 transition-transform duration-200"></div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Lainnya</span>
+</div>
+<!-- Reveal textarea on check (requires minimal JS or CSS peer trick, using simple class toggle here would be better but keeping simple HTML/CSS) -->
+</div>
+</label>
+</div>
+</fieldset>
+<div class="flex gap-sm justify-end mt-xl">
+<button class="px-md py-sm rounded-lg border border-outline-variant font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors" type="button">
+                        Batal
+                    </button>
+<button class="px-md py-sm rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary/90 transition-colors shadow-sm" type="submit">
+                        Kirim Laporan
+                    </button>
+</div>
+</form>
+</div>
+<!-- Success Confirmation View (Hidden initially) -->
+<div class="hidden bg-surface-container-lowest rounded-xl border border-surface-variant p-lg ambient-shadow glass-card text-center transition-all duration-300" id="successView">
+<!-- Soft Monochromatic Illustration Placeholder (Empty State style) -->
+<div class="mx-auto w-32 h-32 mb-md bg-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[64px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Laporan Terkirim</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl">
+                Terima kasih sudah memberi tahu kami. Laporanmu akan ditinjau oleh pihak sekolah.
+            </p>
+<button class="w-full px-md py-sm rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" onclick="closeModal()" type="button">
+                Tutup
+            </button>
+</div>
+</main>
+<script>
+        function showConfirmation() {
+            document.getElementById('reportForm').classList.add('hidden');
+            document.getElementById('successView').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            // In a real app, this would close the modal or redirect.
+            alert('Modal closed/Redirecting back to dashboard.');
+        }
+    </script>
+</body></html>

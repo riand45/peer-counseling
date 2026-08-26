@@ -37,13 +37,16 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Contoh proteksi rute: arahkan user yang belum login ke /login.
-  // Sesuaikan atau hapus sesuai kebutuhan aplikasi Anda.
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
+  // Prefix yang boleh diakses TANPA login:
+  // - /login, /auth : alur autentikasi kader/guru
+  // - /student       : area student anonymous (tanpa akun)
+  const publicPrefixes = ["/login", "/auth", "/student"];
+  const isPublicPath = publicPrefixes.some((prefix) =>
+    request.nextUrl.pathname.startsWith(prefix),
+  );
+
+  // Selain area publik, wajib login (kader/guru).
+  if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
