@@ -133,6 +133,12 @@ describe("startSession", () => {
       await expect(
         startSession({ studentLocalId: localId, topics: ["akademik"], kaderId: kader.id }),
       ).rejects.toThrow("tidak tersedia");
+
+      const { data: sessions } = await service
+        .from("sessions")
+        .select("id")
+        .eq("student_local_id", localId);
+      expect(sessions).toHaveLength(0);
     } finally {
       for (const fn of cleanup.reverse()) {
         await fn();
@@ -183,6 +189,15 @@ describe("endSession", () => {
       await expect(
         endSession({ sessionId, studentLocalId: otherLocalId }),
       ).rejects.toThrow("Tidak diizinkan");
+
+      const service = getServiceClient();
+      const { data: session } = await service
+        .from("sessions")
+        .select("status, ended_at")
+        .eq("id", sessionId)
+        .single();
+      expect(session?.status).not.toBe("ended");
+      expect(session?.ended_at).toBeNull();
     } finally {
       for (const fn of cleanup.reverse()) {
         await fn();
