@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { getKaderDashboardCore, updateKaderStatusCore } from "./core";
+import { getKaderDashboardCore, updateKaderStatusCore, endKaderSessionCore } from "./core";
 import type { KaderStatus } from "@/lib/student/types";
 import type { KaderDashboard } from "./types";
 
@@ -16,4 +16,10 @@ export async function updateKaderStatus(status: KaderStatus): Promise<void> {
   await updateKaderStatusCore(supabase, status);
   revalidatePath("/kader");
   revalidatePath("/kader/profil");
+}
+
+export async function endKaderSession(input: { sessionId: string }): Promise<void> {
+  const supabase = await createClient();
+  await endKaderSessionCore(supabase, input.sessionId);
+  revalidatePath("/kader");
 }

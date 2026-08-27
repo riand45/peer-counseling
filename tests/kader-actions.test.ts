@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getKaderDashboardCore, updateKaderStatusCore } from "@/lib/kader/core";
+import { getKaderDashboardCore, updateKaderStatusCore, endKaderSessionCore } from "@/lib/kader/core";
 import {
   getServiceClient,
   createSignedInTestKader,
@@ -117,6 +117,51 @@ describe("updateKaderStatusCore", () => {
       expect(data?.status).toBe("available");
     } finally {
       await deleteTestUser(id);
+    }
+  });
+});
+
+describe("endKaderSessionCore", () => {
+  it("marks a session ended when called by its assigned kader", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await endKaderSessionCore(client, sessionId);
+
+      const service = getServiceClient();
+      const { data } = await service.from("sessions").select("status, ended_at").eq("id", sessionId).single();
+      expect(data?.status).toBe("ended");
+      expect(data?.ended_at).toBeTruthy();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects ending a session assigned to a different kader", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const owner = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: owner.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(endKaderSessionCore(client, sessionId)).rejects.toThrow("Gagal mengakhiri sesi");
+
+      const service = getServiceClient();
+      const { data } = await service.from("sessions").select("status").eq("id", sessionId).single();
+      expect(data?.status).not.toBe("ended");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(owner.id);
     }
   });
 });
