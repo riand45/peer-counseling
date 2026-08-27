@@ -1,7 +1,7 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
-import type { Topic, KaderSummary } from "./types";
+import type { Topic, KaderSummary, KaderStatus } from "./types";
 
 const AVATAR_SEEDS = ["kucing", "kelinci", "rubah", "beruang", "burung", "rusa", "panda", "koala"];
 
@@ -25,7 +25,8 @@ export async function createStudentIdentity(input: {
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message ?? "Gagal membuat identitas");
+    console.error("createStudentIdentity failed:", error);
+    throw new Error("Gagal membuat identitas");
   }
 
   return { id: data.id as string };
@@ -40,7 +41,8 @@ export async function listAvailableKader(): Promise<KaderSummary[]> {
     .eq("is_verified", true);
 
   if (error) {
-    throw new Error(error.message);
+    console.error("listAvailableKader failed:", error);
+    throw new Error("Gagal memuat daftar kader");
   }
 
   return (data ?? []).map((row) => ({
@@ -61,11 +63,14 @@ export async function startSession(input: {
 
   const { data: kader, error: kaderError } = await service
     .from("profiles")
-    .select("status")
+    .select("status, role, is_verified")
     .eq("id", input.kaderId)
     .single();
 
   if (kaderError || !kader) {
+    throw new Error("Kader tidak ditemukan");
+  }
+  if (kader.role !== "kader" || !kader.is_verified) {
     throw new Error("Kader tidak ditemukan");
   }
   if (kader.status !== "available") {
@@ -85,7 +90,8 @@ export async function startSession(input: {
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message ?? "Gagal memulai sesi");
+    console.error("startSession failed:", error);
+    throw new Error("Gagal memulai sesi");
   }
 
   return { sessionId: data.id as string };
@@ -116,6 +122,45 @@ export async function endSession(input: {
     .eq("id", input.sessionId);
 
   if (error) {
-    throw new Error(error.message);
+    console.error("endSession failed:", error);
+    throw new Error("Gagal mengakhiri sesi, coba lagi");
   }
+}
+
+export async function getSessionKader(input: {
+  sessionId: string;
+  studentLocalId: string;
+}): Promise<{ fullName: string; status: KaderStatus } | null> {
+  const service = createServiceClient();
+
+  const { data: session, error: sessionError } = await service
+    .from("sessions")
+    .select("student_local_id, assigned_to")
+    .eq("id", input.sessionId)
+    .single();
+
+  if (sessionError || !session) {
+    throw new Error("Sesi tidak ditemukan");
+  }
+  if (session.student_local_id !== input.studentLocalId) {
+    throw new Error("Tidak diizinkan mengakses sesi ini");
+  }
+  if (!session.assigned_to) {
+    return null;
+  }
+
+  const { data: kader, error: kaderError } = await service
+    .from("profiles")
+    .select("full_name, status")
+    .eq("id", session.assigned_to)
+    .single();
+
+  if (kaderError || !kader) {
+    return null;
+  }
+
+  return {
+    fullName: kader.full_name ?? "Kader",
+    status: kader.status as KaderStatus,
+  };
 }

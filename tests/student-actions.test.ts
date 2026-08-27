@@ -145,6 +145,27 @@ describe("startSession", () => {
       }
     }
   });
+
+  it("rejects starting a session with an unverified kader even if status is available", async () => {
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const kader = await createTestUser("kader", { verified: false });
+      cleanup.push(() => deleteTestUser(kader.id));
+      const service = getServiceClient();
+      await service.from("profiles").update({ status: "available" }).eq("id", kader.id);
+
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+
+      await expect(
+        startSession({ studentLocalId: localId, topics: ["akademik"], kaderId: kader.id }),
+      ).rejects.toThrow("Kader tidak ditemukan");
+    } finally {
+      for (const fn of cleanup.reverse()) {
+        await fn();
+      }
+    }
+  });
 });
 
 describe("endSession", () => {

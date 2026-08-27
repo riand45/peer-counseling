@@ -8,7 +8,6 @@ type StoryWizardContextValue = {
   kader: KaderSummary | null;
   toggleTopic: (topic: Topic) => void;
   setKader: (kader: KaderSummary) => void;
-  reset: () => void;
 };
 
 const StoryWizardContext = createContext<StoryWizardContextValue | null>(null);
@@ -27,14 +26,9 @@ export function StoryWizardProvider({ children }: { children: ReactNode }) {
     setKaderState(next);
   }, []);
 
-  const reset = useCallback(() => {
-    setTopics([]);
-    setKaderState(null);
-  }, []);
-
   const value = useMemo(
-    () => ({ topics, kader, toggleTopic, setKader, reset }),
-    [topics, kader, toggleTopic, setKader, reset],
+    () => ({ topics, kader, toggleTopic, setKader }),
+    [topics, kader, toggleTopic, setKader],
   );
 
   return <StoryWizardContext.Provider value={value}>{children}</StoryWizardContext.Provider>;

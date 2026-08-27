@@ -5,16 +5,18 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ChatBubble } from "@/components/ui/ChatBubble";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
-import { endSession } from "@/lib/student/actions";
+import { endSession, getSessionKader } from "@/lib/student/actions";
 import { getStudentLocalId } from "@/lib/student/identity";
 
-function KaderAvatar() {
+function KaderAvatar({ fullName }: { fullName?: string }) {
+  const initial = fullName?.trim().charAt(0).toUpperCase() || "K";
+
   return (
     <div
       aria-hidden="true"
       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed text-label-sm font-bold text-on-secondary-fixed"
     >
-      K
+      {initial}
     </div>
   );
 }
@@ -54,6 +56,8 @@ function ChatSession({
   const router = useRouter();
   const [draft, setDraft] = useState("");
   const [ending, setEnding] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [kaderInfo, setKaderInfo] = useState<{ fullName: string; status: string } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { messages, error, send } = useSessionChat(sessionId, studentLocalId);
@@ -62,20 +66,36 @@ function ChatSession({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    getSessionKader({ sessionId, studentLocalId })
+      .then(setKaderInfo)
+      .catch(() => {
+        // Non-fatal: keep the generic "Kader" fallback if this fails.
+      });
+  }, [sessionId, studentLocalId]);
+
   async function handleSend() {
     const body = draft.trim();
     if (!body) return;
-    setDraft("");
-    await send(body);
+    setSendError(null);
+    try {
+      await send(body);
+      setDraft("");
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Pesan gagal terkirim, coba lagi");
+    }
   }
 
   async function handleEnd() {
     setEnding(true);
+    setSendError(null);
     try {
       await endSession({ sessionId, studentLocalId });
-    } finally {
       // TODO(Phase 2): once /student/cerita-saya exists, redirect there instead.
       router.push("/student/topik");
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Gagal mengakhiri sesi, coba lagi");
+      setEnding(false);
     }
   }
 
@@ -86,7 +106,9 @@ function ChatSession({
           <button type="button" onClick={() => router.back()} aria-label="Kembali">
             ←
           </button>
-          <p className="text-label-md font-semibold text-on-surface">Kader</p>
+          <p className="text-label-md font-semibold text-on-surface">
+            {kaderInfo?.fullName ?? "Kader"}
+          </p>
         </div>
         <Button variant="ghost" onClick={handleEnd} disabled={ending}>
           {ending ? "Mengakhiri..." : "Selesaikan Sesi"}
@@ -103,6 +125,12 @@ function ChatSession({
         </p>
       )}
 
+      {sendError && (
+        <p className="mx-sm mt-2 rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
+          {sendError}
+        </p>
+      )}
+
       <div className="flex-1 space-y-3 overflow-y-auto p-sm">
         {messages.map((message) => (
           <ChatBubble
@@ -111,7 +139,11 @@ function ChatSession({
             viewerRole="student"
             body={message.body}
             timestamp={formatTime(message.createdAt)}
-            avatarNode={message.senderRole !== "student" ? <KaderAvatar /> : undefined}
+            avatarNode={
+              message.senderRole !== "student" ? (
+                <KaderAvatar fullName={kaderInfo?.fullName} />
+              ) : undefined
+            }
             readReceipt={message.senderRole === "student" ? "sent" : undefined}
           />
         ))}

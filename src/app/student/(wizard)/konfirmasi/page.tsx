@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -14,6 +14,7 @@ export default function KonfirmasiPage() {
   const { topics, kader } = useStoryWizard();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (topics.length === 0 || !kader) {
@@ -26,6 +27,9 @@ export default function KonfirmasiPage() {
   }
 
   async function handleStart() {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
     const studentLocalId = getStudentLocalId();
     if (!studentLocalId) {
       router.replace("/student");
@@ -44,6 +48,7 @@ export default function KonfirmasiPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memulai sesi");
       setSubmitting(false);
+      submittingRef.current = false;
     }
   }
 
