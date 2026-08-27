@@ -2,11 +2,11 @@
 
 import { createServiceClient } from "@/lib/supabase/service";
 import type { Topic, KaderSummary, KaderStatus } from "./types";
-
-const AVATAR_SEEDS = ["kucing", "kelinci", "rubah", "beruang", "burung", "rusa", "panda", "koala"];
+import { AVATAR_SEED_LABELS } from "./types";
 
 function randomAvatarSeed(): string {
-  return AVATAR_SEEDS[Math.floor(Math.random() * AVATAR_SEEDS.length)];
+  const seeds = Object.keys(AVATAR_SEED_LABELS);
+  return seeds[Math.floor(Math.random() * seeds.length)];
 }
 
 export async function createStudentIdentity(input: {
