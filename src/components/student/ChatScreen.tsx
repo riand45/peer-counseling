@@ -26,9 +26,6 @@ function formatTime(iso: string): string {
 export function ChatScreen({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const [studentLocalId, setLocalId] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
-  const [ending, setEnding] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = getStudentLocalId();
@@ -40,7 +37,26 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
     setLocalId(id);
   }, [router]);
 
-  const { messages, error, send } = useSessionChat(sessionId, studentLocalId ?? undefined);
+  if (!studentLocalId) {
+    return null;
+  }
+
+  return <ChatSession sessionId={sessionId} studentLocalId={studentLocalId} />;
+}
+
+function ChatSession({
+  sessionId,
+  studentLocalId,
+}: {
+  sessionId: string;
+  studentLocalId: string;
+}) {
+  const router = useRouter();
+  const [draft, setDraft] = useState("");
+  const [ending, setEnding] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const { messages, error, send } = useSessionChat(sessionId, studentLocalId);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,13 +64,12 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
 
   async function handleSend() {
     const body = draft.trim();
-    if (!body || !studentLocalId) return;
+    if (!body) return;
     setDraft("");
     await send(body);
   }
 
   async function handleEnd() {
-    if (!studentLocalId) return;
     setEnding(true);
     try {
       await endSession({ sessionId, studentLocalId });
@@ -62,10 +77,6 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
       // TODO(Phase 2): once /student/cerita-saya exists, redirect there instead.
       router.push("/student/topik");
     }
-  }
-
-  if (!studentLocalId) {
-    return null;
   }
 
   return (
