@@ -11,7 +11,7 @@ import { useStoryWizard } from "../wizard-context";
 
 export default function KonfirmasiPage() {
   const router = useRouter();
-  const { topics, kader, reset } = useStoryWizard();
+  const { topics, kader } = useStoryWizard();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +40,6 @@ export default function KonfirmasiPage() {
         topics,
         kaderId: kader!.id,
       });
-      reset();
       router.push(`/student/chat/${sessionId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memulai sesi");
