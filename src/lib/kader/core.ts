@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getStudentDisplayName } from "@/lib/student/types";
-import type { Topic } from "@/lib/student/types";
+import type { KaderStatus, Topic } from "@/lib/student/types";
 import type { KaderDashboard, KaderDashboardSession } from "./types";
 
 export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<KaderDashboard> {
@@ -87,4 +87,22 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
     status: profile.status as KaderDashboard["status"],
     activeSessions,
   };
+}
+
+export async function updateKaderStatusCore(
+  supabase: SupabaseClient,
+  status: KaderStatus,
+): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const { error } = await supabase.from("profiles").update({ status }).eq("id", user.id);
+
+  if (error) {
+    throw new Error("Gagal memperbarui status");
+  }
 }

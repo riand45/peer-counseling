@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getKaderDashboardCore } from "@/lib/kader/core";
+import { getKaderDashboardCore, updateKaderStatusCore } from "@/lib/kader/core";
 import {
   getServiceClient,
   createSignedInTestKader,
@@ -103,6 +103,20 @@ describe("getKaderDashboardCore", () => {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
       await deleteTestUser(other.id);
+    }
+  });
+});
+
+describe("updateKaderStatusCore", () => {
+  it("updates the signed-in kader's own status", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "offline" });
+    try {
+      await updateKaderStatusCore(client, "available");
+      const service = getServiceClient();
+      const { data } = await service.from("profiles").select("status").eq("id", id).single();
+      expect(data?.status).toBe("available");
+    } finally {
+      await deleteTestUser(id);
     }
   });
 });

@@ -1,10 +1,19 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getKaderDashboardCore } from "./core";
+import { revalidatePath } from "next/cache";
+import { getKaderDashboardCore, updateKaderStatusCore } from "./core";
+import type { KaderStatus } from "@/lib/student/types";
 import type { KaderDashboard } from "./types";
 
 export async function getKaderDashboard(): Promise<KaderDashboard> {
   const supabase = await createClient();
   return getKaderDashboardCore(supabase);
+}
+
+export async function updateKaderStatus(status: KaderStatus): Promise<void> {
+  const supabase = await createClient();
+  await updateKaderStatusCore(supabase, status);
+  revalidatePath("/kader");
+  revalidatePath("/kader/profil");
 }
