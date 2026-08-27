@@ -86,6 +86,18 @@ export async function signInTestUser(
   return { client: anon, session: data.session };
 }
 
+export async function createSignedInTestKader(
+  opts: { verified?: boolean; status?: string } = {},
+): Promise<{ id: string; client: SupabaseClient }> {
+  const user = await createTestUser("kader", { verified: opts.verified ?? true });
+  if (opts.status) {
+    const service = getServiceClient();
+    await service.from("profiles").update({ status: opts.status }).eq("id", user.id);
+  }
+  const { client } = await signInTestUser(user.email, user.password);
+  return { id: user.id, client };
+}
+
 export async function createTestSession(input: {
   studentLocalId: string;
   assignedTo?: string;
