@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getKaderDashboardCore, updateKaderStatusCore, endKaderSessionCore } from "@/lib/kader/core";
+import {
+  getKaderDashboardCore,
+  updateKaderStatusCore,
+  endKaderSessionCore,
+  getSessionStudentInfoCore,
+} from "@/lib/kader/core";
 import {
   getServiceClient,
   createSignedInTestKader,
@@ -158,6 +163,53 @@ describe("endKaderSessionCore", () => {
       const service = getServiceClient();
       const { data } = await service.from("sessions").select("status").eq("id", sessionId).single();
       expect(data?.status).not.toBe("ended");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(owner.id);
+    }
+  });
+});
+
+describe("getSessionStudentInfoCore", () => {
+  it("returns topics, status, and the student's display name for the assigned kader", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: "Sahabat Langit" }).eq("id", localId);
+
+      const sessionId = await createTestSession({
+        studentLocalId: localId,
+        assignedTo: id,
+        topics: ["keluarga"],
+      });
+      cleanup.push(() => deleteTestSession(sessionId));
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+
+      const info = await getSessionStudentInfoCore(client, sessionId);
+      expect(info.displayName).toBe("Sahabat Langit");
+      expect(info.topics).toEqual(["keluarga"]);
+      expect(info.status).toBe("active");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects a kader who is not assigned to the session", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const owner = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: owner.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(getSessionStudentInfoCore(client, sessionId)).rejects.toThrow("Sesi tidak ditemukan");
     } finally {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);

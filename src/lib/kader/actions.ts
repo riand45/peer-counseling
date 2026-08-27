@@ -2,9 +2,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { getKaderDashboardCore, updateKaderStatusCore, endKaderSessionCore } from "./core";
+import {
+  getKaderDashboardCore,
+  updateKaderStatusCore,
+  endKaderSessionCore,
+  getSessionStudentInfoCore,
+} from "./core";
 import type { KaderStatus } from "@/lib/student/types";
-import type { KaderDashboard } from "./types";
+import type { KaderDashboard, SessionStudentInfo } from "./types";
 
 export async function getKaderDashboard(): Promise<KaderDashboard> {
   const supabase = await createClient();
@@ -22,4 +27,9 @@ export async function endKaderSession(input: { sessionId: string }): Promise<voi
   const supabase = await createClient();
   await endKaderSessionCore(supabase, input.sessionId);
   revalidatePath("/kader");
+}
+
+export async function getSessionStudentInfo(input: { sessionId: string }): Promise<SessionStudentInfo> {
+  const supabase = await createClient();
+  return getSessionStudentInfoCore(supabase, input.sessionId);
 }

@@ -13,3 +13,11 @@ export type KaderDashboard = {
   status: KaderStatus;
   activeSessions: KaderDashboardSession[];
 };
+
+export type SessionStatus = "waiting" | "active" | "escalated" | "ended";
+
+export type SessionStudentInfo = {
+  displayName: string;
+  topics: Topic[];
+  status: SessionStatus;
+};

@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getStudentDisplayName } from "@/lib/student/types";
 import type { KaderStatus, Topic } from "@/lib/student/types";
-import type { KaderDashboard, KaderDashboardSession } from "./types";
+import type { KaderDashboard, KaderDashboardSession, SessionStatus, SessionStudentInfo } from "./types";
 
 export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<KaderDashboard> {
   const {
@@ -118,4 +118,35 @@ export async function endKaderSessionCore(supabase: SupabaseClient, sessionId: s
   if (error || !data) {
     throw new Error("Gagal mengakhiri sesi, coba lagi");
   }
+}
+
+export async function getSessionStudentInfoCore(
+  supabase: SupabaseClient,
+  sessionId: string,
+): Promise<SessionStudentInfo> {
+  const { data: session, error: sessionError } = await supabase
+    .from("sessions")
+    .select("topics, status, student_local_id")
+    .eq("id", sessionId)
+    .single();
+
+  if (sessionError || !session) {
+    throw new Error("Sesi tidak ditemukan");
+  }
+
+  const service = createServiceClient();
+  const { data: identity } = await service
+    .from("student_identities")
+    .select("nickname, avatar_seed")
+    .eq("id", session.student_local_id as string)
+    .single();
+
+  return {
+    displayName: getStudentDisplayName(
+      identity?.nickname as string | null | undefined,
+      identity?.avatar_seed as string | null | undefined,
+    ),
+    topics: (session.topics as Topic[]) ?? [],
+    status: session.status as SessionStatus,
+  };
 }
