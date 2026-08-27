@@ -6,6 +6,24 @@ import { Button } from "@/components/ui/Button";
 
 const navItems = [{ href: "/guru", label: "Beranda", icon: "🏠" }];
 
+function ClockIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  );
+}
+
 export default async function GuruLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const {
@@ -33,13 +51,19 @@ export default async function GuruLayout({ children }: { children: React.ReactNo
   if (!profile.is_verified) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface p-sm">
-        <div className="max-w-sm rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center">
-          <h1 className="text-headline-md font-bold text-on-surface">Menunggu verifikasi</h1>
+        <div className="w-full max-w-[24rem] rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center shadow-[0_20px_45px_-20px_rgba(0,93,167,0.25)]">
+          <div
+            aria-hidden="true"
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tertiary text-on-tertiary"
+          >
+            <ClockIcon />
+          </div>
+          <h1 className="mt-4 text-headline-md font-bold text-on-surface">Menunggu verifikasi</h1>
           <p className="mt-2 text-body-md text-on-surface-variant">
             Akun Guru BK Anda belum diverifikasi. Hubungi admin sekolah atau
             pengelola aplikasi untuk verifikasi.
           </p>
-          <form action={signout} className="mt-4">
+          <form action={signout} className="mt-6">
             <Button type="submit" variant="ghost" className="w-full">
               Keluar
             </Button>
