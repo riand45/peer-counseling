@@ -17,5 +17,23 @@ export default async function KaderChatPage({
     redirect("/kader/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, is_verified")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) {
+    redirect("/kader/login");
+  }
+
+  if (profile.role !== "kader") {
+    redirect("/guru");
+  }
+
+  if (!profile.is_verified) {
+    redirect("/kader");
+  }
+
   return <ChatScreen sessionId={sessionId} />;
 }
