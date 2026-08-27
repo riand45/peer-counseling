@@ -89,7 +89,7 @@ export async function signInTestUser(
 export async function createTestSession(input: {
   studentLocalId: string;
   assignedTo?: string;
-  topic?: string;
+  topics?: string[];
 }): Promise<string> {
   const service = getServiceClient();
   const { data, error } = await service
@@ -97,7 +97,7 @@ export async function createTestSession(input: {
     .insert({
       student_local_id: input.studentLocalId,
       assigned_to: input.assignedTo ?? null,
-      topic: input.topic ?? "akademik",
+      topics: input.topics ?? ["akademik"],
     })
     .select("id")
     .single();

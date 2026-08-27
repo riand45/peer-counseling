@@ -174,7 +174,7 @@ describe("schema: kader/guru RLS scoping on sessions", () => {
       cleanup.push(() => deleteTestStudentIdentity(localId));
       const { data: session, error: sessionError } = await service
         .from("sessions")
-        .insert({ student_local_id: localId, assigned_to: kaderA.id, topic: "akademik" })
+        .insert({ student_local_id: localId, assigned_to: kaderA.id, topics: ["akademik"] })
         .select("id")
         .single();
       expect(sessionError).toBeNull();
@@ -214,7 +214,7 @@ describe("schema: kader/guru RLS scoping on sessions", () => {
       cleanup.push(() => deleteTestStudentIdentity(localId));
       const { data: session, error: sessionError } = await service
         .from("sessions")
-        .insert({ student_local_id: localId, assigned_to: kader.id, topic: "bullying" })
+        .insert({ student_local_id: localId, assigned_to: kader.id, topics: ["bullying"] })
         .select("id")
         .single();
       expect(sessionError).toBeNull();

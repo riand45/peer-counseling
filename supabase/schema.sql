@@ -181,7 +181,7 @@ create table if not exists public.sessions (
   id uuid primary key default gen_random_uuid(),
   student_local_id uuid not null references public.student_identities (id) on delete cascade,
   assigned_to uuid references public.profiles (id) on delete set null,
-  topic public.topic not null,
+  topics public.topic[] not null,
   status public.session_status not null default 'waiting',
   started_at timestamptz,
   ended_at timestamptz,
