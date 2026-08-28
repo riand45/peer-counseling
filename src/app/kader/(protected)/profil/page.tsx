@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StatusToggle } from "@/components/kader/StatusToggle";
-import type { KaderStatus } from "@/lib/student/types";
+import { BioEditor } from "@/components/kader/BioEditor";
+import { TopicsEditor } from "@/components/kader/TopicsEditor";
+import type { KaderStatus, Topic } from "@/lib/student/types";
 
 export default async function KaderProfilPage() {
   const supabase = await createClient();
@@ -15,12 +17,14 @@ export default async function KaderProfilPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, status")
+    .select("full_name, status, bio, topics")
     .eq("id", user.id)
     .single();
 
   const fullName = (profile?.full_name as string | null) ?? "Kader";
   const status = (profile?.status as KaderStatus | null) ?? "offline";
+  const bio = (profile?.bio as string | null) ?? null;
+  const topics = (profile?.topics as Topic[] | null) ?? [];
   const initial = fullName.trim().charAt(0).toUpperCase() || "K";
 
   return (
@@ -41,9 +45,18 @@ export default async function KaderProfilPage() {
         <StatusToggle status={status} />
       </div>
 
-      <p className="text-body-md text-on-surface-variant">
-        Pengaturan bio dan topik konsultasi akan tersedia pada pembaruan berikutnya.
-      </p>
+      <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-md">
+        <h2 className="mb-4 text-headline-md text-on-surface">Bio Singkat</h2>
+        <BioEditor bio={bio} />
+      </div>
+
+      <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-md">
+        <h2 className="mb-2 text-headline-md text-on-surface">Topik Konsultasi Saya</h2>
+        <p className="mb-4 text-body-md text-on-surface-variant">
+          Pilih topik yang paling kamu kuasai untuk membantu adik kelas merasa lebih terhubung.
+        </p>
+        <TopicsEditor topics={topics} />
+      </div>
     </div>
   );
 }
