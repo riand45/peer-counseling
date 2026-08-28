@@ -270,6 +270,10 @@ export async function updateStudentProfile(input: {
     throw new Error("Avatar tidak dikenal");
   }
 
+  if (input.nickname === undefined && input.avatarSeed === undefined) {
+    return;
+  }
+
   const update: Record<string, unknown> = {};
   if (input.nickname !== undefined) {
     update.nickname = input.nickname.trim() || null;
