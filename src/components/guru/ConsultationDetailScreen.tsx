@@ -102,7 +102,7 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
     }
   }
 
-  if (loadError) {
+  if (loadError && !detail) {
     return (
       <p className="rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
         {loadError}
@@ -122,9 +122,9 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
         </div>
       )}
 
-      {actionError && (
+      {(loadError || actionError) && (
         <p className="rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
-          {actionError}
+          {loadError ?? actionError}
         </p>
       )}
 
