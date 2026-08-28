@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Nested git worktrees under .claude/worktrees/ are separate checkouts
+    // (git-ignored, not part of this project) but ESLint's file walk still
+    // reaches them unless explicitly excluded here — same issue vitest.config.ts
+    // already works around for the test runner.
+    ".claude/worktrees/**",
   ]),
 ]);
 
