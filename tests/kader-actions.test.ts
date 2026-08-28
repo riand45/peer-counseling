@@ -8,6 +8,7 @@ import {
   updateKaderTopicsCore,
   getAvailableKaderForTransferCore,
   transferSessionCore,
+  escalateSessionCore,
 } from "@/lib/kader/core";
 import { MAX_BIO_LENGTH } from "@/lib/kader/types";
 import {
@@ -434,6 +435,82 @@ describe("transferSessionCore", () => {
       await deleteTestUser(id);
       await deleteTestUser(busyTarget.id);
       await deleteTestUser(unverifiedTarget.id);
+    }
+  });
+});
+
+describe("escalateSessionCore", () => {
+  it("inserts a pending escalation and flips the session status to escalated", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+
+      await escalateSessionCore(client, { sessionId, reason: "Butuh bantuan guru" });
+
+      const { data: escalation } = await service
+        .from("escalations")
+        .select("kader_id, reason, status")
+        .eq("session_id", sessionId)
+        .single();
+      expect(escalation?.kader_id).toBe(id);
+      expect(escalation?.reason).toBe("Butuh bantuan guru");
+      expect(escalation?.status).toBe("pending");
+
+      const { data: session } = await service.from("sessions").select("status").eq("id", sessionId).single();
+      expect(session?.status).toBe("escalated");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("allows a null reason", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await escalateSessionCore(client, { sessionId, reason: null });
+
+      const service = getServiceClient();
+      const { data: escalation } = await service
+        .from("escalations")
+        .select("reason")
+        .eq("session_id", sessionId)
+        .single();
+      expect(escalation?.reason).toBeNull();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects a kader who is not assigned to the session", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const owner = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: owner.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(escalateSessionCore(client, { sessionId, reason: null })).rejects.toThrow(
+        "Gagal mengirim eskalasi",
+      );
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(owner.id);
     }
   });
 });

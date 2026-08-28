@@ -11,6 +11,7 @@ import {
   updateKaderTopicsCore,
   getAvailableKaderForTransferCore,
   transferSessionCore,
+  escalateSessionCore,
 } from "./core";
 import type { KaderStatus, KaderSummary, Topic } from "@/lib/student/types";
 import type { KaderDashboard, SessionStudentInfo } from "./types";
@@ -59,4 +60,9 @@ export async function transferSession(input: { sessionId: string; toKaderId: str
   const supabase = await createClient();
   await transferSessionCore(supabase, input);
   revalidatePath("/kader");
+}
+
+export async function escalateSession(input: { sessionId: string; reason: string | null }): Promise<void> {
+  const supabase = await createClient();
+  await escalateSessionCore(supabase, input);
 }

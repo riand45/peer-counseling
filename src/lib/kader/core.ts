@@ -293,3 +293,25 @@ export async function transferSessionCore(
     throw new Error("Gagal mengalihkan konsultasi");
   }
 }
+
+export async function escalateSessionCore(
+  supabase: SupabaseClient,
+  input: { sessionId: string; reason: string | null },
+): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const { error } = await supabase.from("escalations").insert({
+    session_id: input.sessionId,
+    kader_id: user.id,
+    reason: input.reason,
+  });
+
+  if (error) {
+    throw new Error("Gagal mengirim eskalasi, coba lagi");
+  }
+}
