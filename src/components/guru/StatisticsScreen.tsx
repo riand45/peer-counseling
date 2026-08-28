@@ -66,7 +66,6 @@ export function StatisticsScreen() {
 
   useEffect(() => {
     let active = true;
-    setStats(null);
     getGuruStatistics(rangeDays)
       .then((data) => {
         if (active) {
