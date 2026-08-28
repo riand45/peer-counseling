@@ -7,6 +7,7 @@ import type {
   ActivityItem,
   AttentionItem,
   ConsultationCounts,
+  ConsultationDetail,
   ConsultationListItem,
   ConsultationListResult,
   GuruDashboard,
@@ -280,4 +281,42 @@ export async function listConsultationsCore(
   const items = filtered.slice(start, start + pageSize);
 
   return { items, total: filtered.length, page, pageSize };
+}
+
+export async function getConsultationDetailCore(
+  supabase: SupabaseClient,
+  sessionId: string,
+): Promise<ConsultationDetail> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const { data: session, error } = await supabase
+    .from("sessions")
+    .select("id, topics, status, student_local_id, assigned_to, created_at")
+    .eq("id", sessionId)
+    .single();
+
+  if (error || !session) {
+    throw new Error("Sesi tidak ditemukan");
+  }
+
+  const assignedTo = session.assigned_to as string | null;
+
+  const identityById = await resolveStudentDisplayNames(supabase, [session.student_local_id as string]);
+  const kaderNameById = await resolveKaderNames(supabase, assignedTo ? [assignedTo] : []);
+  const identity = identityById.get(session.student_local_id as string);
+
+  return {
+    sessionId: session.id as string,
+    studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+    assignedKaderName: assignedTo ? kaderNameById.get(assignedTo) ?? null : null,
+    hasTakenOver: assignedTo === user.id,
+    topics: (session.topics as Topic[]) ?? [],
+    status: session.status as SessionStatus,
+    createdAt: session.created_at as string,
+  };
 }

@@ -61,3 +61,13 @@ export type ConsultationListResult = {
   page: number;
   pageSize: number;
 };
+
+export type ConsultationDetail = {
+  sessionId: string;
+  studentDisplayName: string;
+  assignedKaderName: string | null;
+  hasTakenOver: boolean;
+  topics: Topic[];
+  status: SessionStatus;
+  createdAt: string;
+};

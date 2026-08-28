@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getGuruDashboardCore } from "@/lib/guru/core";
 import { listConsultationsCore } from "@/lib/guru/core";
+import { getConsultationDetailCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -235,6 +236,68 @@ describe("listConsultationsCore", () => {
       }
     } finally {
       for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("getConsultationDetailCore", () => {
+  it("returns display name, assigned kader, topics, and status for any session", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: "Sahabat Detail" }).eq("id", localId);
+
+      const kader = await createSignedInTestKader({ status: "available" });
+      cleanup.push(() => deleteTestUser(kader.id));
+
+      const sessionId = await createTestSession({
+        studentLocalId: localId,
+        assignedTo: kader.id,
+        topics: ["bullying"],
+      });
+      cleanup.push(() => deleteTestSession(sessionId));
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+
+      const detail = await getConsultationDetailCore(client, sessionId);
+      expect(detail.studentDisplayName).toBe("Sahabat Detail");
+      expect(detail.topics).toEqual(["bullying"]);
+      expect(detail.assignedKaderName).toBeTruthy();
+      expect(detail.status).toBe("active");
+      expect(detail.hasTakenOver).toBe(false);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("reports hasTakenOver true once the session is assigned to this guru", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const detail = await getConsultationDetailCore(client, sessionId);
+      expect(detail.hasTakenOver).toBe(true);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("throws for a session id that does not exist", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      await expect(
+        getConsultationDetailCore(client, "00000000-0000-0000-0000-000000000000"),
+      ).rejects.toThrow("Sesi tidak ditemukan");
+    } finally {
       await deleteTestUser(id);
     }
   });
