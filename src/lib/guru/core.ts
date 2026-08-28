@@ -78,15 +78,25 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
 
   const { data: activityRows, error: activityError } = await supabase
     .from("sessions")
-    .select("id, topics, status, student_local_id, assigned_to, last_message_at")
-    .order("last_message_at", { ascending: false, nullsFirst: false })
-    .limit(ACTIVITY_LIMIT);
+    .select("id, topics, status, student_local_id, assigned_to, last_message_at, created_at");
 
   if (activityError) {
     throw new Error("Gagal memuat aktivitas terbaru");
   }
 
-  const activityRowList = activityRows ?? [];
+  // last_message_at has no default and stays null until a session's first
+  // message — a DB-side .limit() on that column alone would silently drop
+  // brand-new, not-yet-messaged sessions once ≥ACTIVITY_LIMIT other sessions
+  // have a non-null last_message_at. Coalesce to created_at and sort/limit
+  // in JS instead, so a newly created session always sorts by its own recency.
+  const activityRowList = (activityRows ?? [])
+    .slice()
+    .sort((a, b) => {
+      const aKey = (a.last_message_at as string | null) ?? (a.created_at as string);
+      const bKey = (b.last_message_at as string | null) ?? (b.created_at as string);
+      return bKey.localeCompare(aKey);
+    })
+    .slice(0, ACTIVITY_LIMIT);
 
   const sessionInfoById = new Map<string, { student_local_id: string; assigned_to: string | null }>();
   for (const row of activityRowList) {
