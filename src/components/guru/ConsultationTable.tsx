@@ -63,7 +63,10 @@ export function ConsultationTable({
                 <td className="py-3 pr-3">{item.topics[0] ? TOPIC_LABELS[item.topics[0]] : "-"}</td>
                 <td className="py-3 pr-3">{item.assignedKaderName ?? "- Belum Ditugaskan -"}</td>
                 <td className="py-3 pr-3">
-                  <Chip tone={SESSION_STATUS_TONES[item.status]}>{SESSION_STATUS_LABELS[item.status]}</Chip>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Chip tone={SESSION_STATUS_TONES[item.status]}>{SESSION_STATUS_LABELS[item.status]}</Chip>
+                    {item.archived && <Chip tone="neutral">Diarsipkan</Chip>}
+                  </div>
                 </td>
                 <td className="py-3 pr-3 text-on-surface-variant">{formatDate(item.createdAt)}</td>
                 <td className="py-3 pr-3">

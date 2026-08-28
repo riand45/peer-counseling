@@ -18,6 +18,7 @@ export function ConsultationListScreen() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState<SessionStatus | "all">("all");
+  const [includeArchived, setIncludeArchived] = useState(false);
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<ConsultationListResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,12 @@ export function ConsultationListScreen() {
 
   useEffect(() => {
     let active = true;
-    listConsultations({ status: status === "all" ? undefined : status, search: debouncedSearch, page })
+    listConsultations({
+      status: status === "all" ? undefined : status,
+      search: debouncedSearch,
+      page,
+      includeArchived,
+    })
       .then((data) => {
         if (active) {
           setResult(data);
@@ -46,10 +52,15 @@ export function ConsultationListScreen() {
     return () => {
       active = false;
     };
-  }, [debouncedSearch, status, page]);
+  }, [debouncedSearch, status, page, includeArchived]);
 
   function handleStatusChange(next: SessionStatus | "all") {
     setStatus(next);
+    setPage(1);
+  }
+
+  function handleIncludeArchivedChange(next: boolean) {
+    setIncludeArchived(next);
     setPage(1);
   }
 
@@ -93,6 +104,15 @@ export function ConsultationListScreen() {
             </button>
           ))}
         </div>
+        <label className="flex items-center gap-2 text-label-md text-on-surface-variant">
+          <input
+            type="checkbox"
+            checked={includeArchived}
+            onChange={(e) => handleIncludeArchivedChange(e.target.checked)}
+            className="h-4 w-4 rounded border-outline-variant"
+          />
+          Tampilkan yang diarsipkan
+        </label>
       </div>
 
       {error && (
