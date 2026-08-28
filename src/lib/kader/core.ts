@@ -284,14 +284,12 @@ export async function transferSessionCore(
     throw new Error("Gagal mencatat pengalihan");
   }
 
-  const { data: updated, error: updateError } = await supabase
+  const { error: updateError } = await service
     .from("sessions")
     .update({ assigned_to: input.toKaderId })
-    .eq("id", input.sessionId)
-    .select("id")
-    .single();
+    .eq("id", input.sessionId);
 
-  if (updateError || !updated) {
+  if (updateError) {
     throw new Error("Gagal mengalihkan konsultasi");
   }
 }

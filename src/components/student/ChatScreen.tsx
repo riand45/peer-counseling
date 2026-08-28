@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ChatBubble } from "@/components/ui/ChatBubble";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
 import { endSession, getSessionKader } from "@/lib/student/actions";
-import { getStudentLocalId } from "@/lib/student/identity";
+import { useRequireStudentIdentity } from "@/lib/student/useRequireStudentIdentity";
 
 function KaderAvatar({ fullName }: { fullName?: string }) {
   const initial = fullName?.trim().charAt(0).toUpperCase() || "K";
@@ -26,18 +26,7 @@ function formatTime(iso: string): string {
 }
 
 export function ChatScreen({ sessionId }: { sessionId: string }) {
-  const router = useRouter();
-  const [studentLocalId, setLocalId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const id = getStudentLocalId();
-    if (!id) {
-      router.replace("/student");
-      return;
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- deferring a client-only localStorage read to avoid a server/client hydration mismatch; not a cascading-render risk (fires once per mount)
-    setLocalId(id);
-  }, [router]);
+  const studentLocalId = useRequireStudentIdentity();
 
   if (!studentLocalId) {
     return null;
