@@ -95,13 +95,16 @@ authorization (no manual role checks beyond what `is_guru()` already enforces).
     panel already uses, for consistent semantics).
   - `trend: { date: string; count: number }[]` — one entry per calendar day in the
     range (including zero-count days), sessions bucketed by `created_at`'s date.
-  - `statusDistribution: { bucket: "waiting" | "active" | "escalating" |
-    "ended"; count: number }[]` — every session in range falls into exactly one
-    bucket: `waiting`/`ended` map directly from `status`; `status = 'active'`
-    splits into `active` (no pending escalation) or `escalating` (has ≥1 pending
-    escalation for that `session_id` in the fetched `escalations` set). Buckets
-    sum to `totalSessions`, so this bucketing must not be confused with
-    `sessions.status`, which has no `'escalating'` value.
+  - `statusDistribution: { status: SessionStatus; count: number }[]` — a
+    straight group-by over the fetched sessions' `status` column (all 4
+    `SessionStatus` values, `waiting`/`active`/`escalated`/`ended`; zero-count
+    statuses still get an entry). No derivation needed: unlike `'waiting'`
+    (Phase 1's documented "parked, no code path produces it" gap),
+    `'escalated'` is genuinely reachable — `supabase/schema.sql`'s
+    `on_escalation_created` trigger sets `sessions.status = 'escalated'` on
+    every `escalations` insert, and nothing ever reverts it (there is no
+    "resolve" action anywhere in the codebase that sets it back to `active`;
+    only Phase 1's "Tandai Selesai" moves it again, straight to `ended`).
   - `topicDistribution: { topic: Topic; count: number }[]` — one entry per
     `Topic` enum value (all 7, `TOPICS` order), counting sessions whose `topics`
     array contains that value (a session with multiple topics counts once per
@@ -145,11 +148,10 @@ New nav item, canonical position per Phase 1 §"Mockup nav inconsistency (resolv
 3. `TrendChart` — area/line chart, one point per day in `trend`. X-axis renders
    real dates (e.g. "12 Agu"), not the mockup's bare `1..30` day-index, since a
    day index is meaningless once the range isn't exactly a calendar month.
-4. `StatusDonutChart` — donut over `statusDistribution`'s 4 buckets
-   (waiting/active/escalating/ended), labeled Menunggu/Berlangsung/Eskalasi/Selesai
-   (reusing `SESSION_STATUS_LABELS` for the 3 real ones, "Eskalasi" for the
-   synthetic `escalating` bucket — see §4's bucketing note for why this isn't
-   literally `sessions.status`).
+4. `StatusDonutChart` — donut over `statusDistribution`'s 4 buckets, labeled
+   and colored via the existing `SESSION_STATUS_LABELS`/`SESSION_STATUS_TONES`
+   maps from `@/lib/guru/types` (already covers all 4 `SessionStatus` values,
+   `'escalated'` included — no new label map needed).
 5. `TopicBarChart` — bar chart over `topicDistribution`, one bar per the app's
    real 7 `Topic` values via `TOPIC_LABELS`. This **replaces** the mockup's 6
    invented categories ("Kecemasan", "Karir/Masa Depan") that don't correspond to
@@ -248,14 +250,15 @@ to add a button later without any migration.
 - **No trend-percentage comparison** on any stat card (§5, point 2) — would
   require a second query against the prior equal-length period; nothing in the
   spec currently needs that number beyond matching the mockup's decoration.
-- **`escalating` in `statusDistribution` is derived, not stored** (§4) — a
-  session's "is it currently escalating" state is computed from a join against
-  `escalations.status = 'pending'` at query time, not persisted anywhere. If a
-  pending escalation later gets resolved, that session retroactively stops
-  counting as `escalating` in any *future* Statistik query for a range that
-  still includes it — this is correct/expected (the stat reflects current state
-  within the historical range), not a bug, but worth remembering when comparing
-  two Statistik snapshots taken at different times over an overlapping range.
+- **A session stuck in `'escalated'` status has no "resolve" path anywhere in
+  the app** (§4) — once `on_escalation_created` flips a session to
+  `'escalated'`, nothing (this phase included) reverts it to `'active'`; the
+  only way its status changes again is a guru ending it via "Tandai Selesai".
+  So `statusDistribution`'s `escalated` bucket only shrinks for a given
+  session by that session moving to `ended`, never by an escalation being
+  independently acknowledged/resolved — matching the fact that no
+  acknowledge/resolve action exists in the codebase today (pre-dates this
+  phase, not something introduced or fixed here).
 - **CSV export has no localization/formatting options** — one fixed format
   (comma-separated, ISO dates), no configurability.
 - **"Laporan" remains fully out of scope** (§1) — still just a name with nothing
