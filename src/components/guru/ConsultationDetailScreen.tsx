@@ -252,7 +252,7 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
             <Button
               variant="ghost"
               onClick={() => setConfirmingArchive(true)}
-              disabled={Boolean(detail.archivedAt)}
+              disabled={Boolean(detail.archivedAt) || detail.status !== "ended"}
             >
               🗑 Hapus Log
             </Button>
