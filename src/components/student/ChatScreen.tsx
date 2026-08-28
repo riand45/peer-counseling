@@ -82,8 +82,7 @@ function ChatSession({
     setSendError(null);
     try {
       await endSession({ sessionId, studentLocalId });
-      // TODO(Phase 2): once /student/cerita-saya exists, redirect there instead.
-      router.push("/student/topik");
+      router.push("/student/cerita-saya");
     } catch (err) {
       setSendError(err instanceof Error ? err.message : "Gagal mengakhiri sesi, coba lagi");
       setEnding(false);

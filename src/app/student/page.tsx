@@ -17,8 +17,7 @@ export default function StudentWelcomePage() {
   useEffect(() => {
     const existing = getStudentLocalId();
     if (existing) {
-      // TODO(Phase 2): once /student/cerita-saya exists, redirect there instead.
-      router.replace("/student/topik");
+      router.replace("/student/cerita-saya");
       return;
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- deferring a client-only localStorage read to avoid a server/client hydration mismatch; not a cascading-render risk (fires once per mount)
