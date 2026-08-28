@@ -1,7 +1,17 @@
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
 
-export function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
+export function StatCard({
+  icon,
+  label,
+  value,
+  caption,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string | number;
+  caption?: ReactNode;
+}) {
   return (
     <Card className="flex flex-col gap-3">
       <div
@@ -13,6 +23,7 @@ export function StatCard({ icon, label, value }: { icon: ReactNode; label: strin
       <div>
         <p className="text-label-md text-on-surface-variant">{label}</p>
         <p className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-lg">{value}</p>
+        {caption && <p className="text-label-sm text-on-surface-variant">{caption}</p>}
       </div>
     </Card>
   );
