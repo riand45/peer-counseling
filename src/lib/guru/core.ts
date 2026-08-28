@@ -74,7 +74,10 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
     throw new Error("Gagal memuat profil");
   }
 
-  const { data: statusRows, error: statusError } = await supabase.from("sessions").select("status");
+  const { data: statusRows, error: statusError } = await supabase
+    .from("sessions")
+    .select("status")
+    .is("archived_at", null);
 
   if (statusError) {
     throw new Error("Gagal memuat ringkasan konsultasi");
@@ -126,7 +129,8 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
 
   const { data: activityRows, error: activityError } = await supabase
     .from("sessions")
-    .select("id, topics, status, student_local_id, assigned_to, last_message_at, created_at");
+    .select("id, topics, status, student_local_id, assigned_to, last_message_at, created_at")
+    .is("archived_at", null);
 
   if (activityError) {
     throw new Error("Gagal memuat aktivitas terbaru");
@@ -222,17 +226,27 @@ const DEFAULT_PAGE_SIZE = 10;
 
 export async function listConsultationsCore(
   supabase: SupabaseClient,
-  input: { status?: SessionStatus; search?: string; page: number; pageSize?: number },
+  input: {
+    status?: SessionStatus;
+    search?: string;
+    page: number;
+    pageSize?: number;
+    includeArchived?: boolean;
+  },
 ): Promise<ConsultationListResult> {
   const pageSize = input.pageSize ?? DEFAULT_PAGE_SIZE;
 
   let query = supabase
     .from("sessions")
-    .select("id, topics, status, student_local_id, assigned_to, created_at")
+    .select("id, topics, status, student_local_id, assigned_to, created_at, archived_at")
     .order("created_at", { ascending: false });
 
   if (input.status) {
     query = query.eq("status", input.status);
+  }
+
+  if (!input.includeArchived) {
+    query = query.is("archived_at", null);
   }
 
   const { data: sessions, error } = await query;
@@ -264,6 +278,7 @@ export async function listConsultationsCore(
       assignedKaderName: assignedTo ? kaderNameById.get(assignedTo) ?? null : null,
       status: row.status as SessionStatus,
       createdAt: row.created_at as string,
+      archived: Boolean(row.archived_at),
     };
   });
 

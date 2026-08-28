@@ -128,6 +128,28 @@ describe("getGuruDashboardCore", () => {
       await deleteTestUser(id);
     }
   });
+
+  it("excludes an archived session from Aktivitas Terbaru", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service
+        .from("sessions")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", sessionId);
+
+      const result = await getGuruDashboardCore(client);
+      expect(result.activity.find((item) => item.sessionId === sessionId)).toBeUndefined();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
 });
 
 describe("listConsultationsCore", () => {
@@ -264,6 +286,39 @@ describe("listConsultationsCore", () => {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
       await deleteTestUser(other.id);
+    }
+  });
+
+  it("excludes archived sessions by default and includes them with includeArchived", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const uniqueName = `UjiArsip-${Date.now()}`;
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: uniqueName }).eq("id", localId);
+
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+      await service
+        .from("sessions")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", sessionId);
+
+      const defaultResult = await listConsultationsCore(client, { search: uniqueName, page: 1 });
+      expect(defaultResult.items).toHaveLength(0);
+
+      const withArchived = await listConsultationsCore(client, {
+        search: uniqueName,
+        page: 1,
+        includeArchived: true,
+      });
+      expect(withArchived.items).toHaveLength(1);
+      expect(withArchived.items[0].archived).toBe(true);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
     }
   });
 });

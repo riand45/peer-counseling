@@ -15,6 +15,7 @@ export async function listConsultations(input: {
   status?: SessionStatus;
   search?: string;
   page: number;
+  includeArchived?: boolean;
 }): Promise<ConsultationListResult> {
   const supabase = await createClient();
   return listConsultationsCore(supabase, input);

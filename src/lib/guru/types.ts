@@ -41,6 +41,7 @@ export type ConsultationListItem = {
   assignedKaderName: string | null;
   status: SessionStatus;
   createdAt: string;
+  archived: boolean;
 };
 
 export type ConsultationListResult = {
