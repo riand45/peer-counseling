@@ -32,8 +32,6 @@ describe("getGuruDashboardCore", () => {
     const { id, client } = await createSignedInTestGuru();
     const cleanup: Array<() => Promise<void>> = [];
     try {
-      const before = await getGuruDashboardCore(client);
-
       const localId = await createTestStudentIdentity();
       cleanup.push(() => deleteTestStudentIdentity(localId));
       const service = getServiceClient();
@@ -50,9 +48,14 @@ describe("getGuruDashboardCore", () => {
       cleanup.push(() => deleteTestSession(sessionId));
       await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
 
+      // counts.total/active are global, unscoped aggregates over a table other
+      // concurrently-run test files also insert into and delete from — a
+      // before/after delta on them (even a >= one) is inherently racy against
+      // a shared live Supabase project. The activity list is scoped by
+      // sessionId below and is the part of this test that's actually
+      // deterministic; counts' shape is covered separately by the
+      // "well-formed empty-safe counts/lists" test above.
       const after = await getGuruDashboardCore(client);
-      expect(after.counts.total).toBeGreaterThanOrEqual(before.counts.total + 1);
-      expect(after.counts.active).toBeGreaterThanOrEqual(before.counts.active + 1);
 
       const activityItem = after.activity.find((item) => item.sessionId === sessionId);
       expect(activityItem).toBeTruthy();
