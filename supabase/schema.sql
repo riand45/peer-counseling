@@ -585,10 +585,18 @@ on conflict (id) do nothing;
 --     = auth.uid()) menolak update manapun yang mengubah assigned_to
 --     menjadi bukan diri sendiri, walau with check-nya `true`, karena
 --     baris hasilnya tidak lagi memenuhi USING itu. Fungsi
---     SECURITY DEFINER ini memverifikasi kepemilikan secara eksplisit
---     lalu melakukan update dengan privilese elevated, khusus untuk
---     baris yang sudah terbukti dimiliki pemanggil — tidak melonggarkan
---     RLS apa pun, hanya melewati jebakan self-referential di atas.
+--     SECURITY DEFINER ini memverifikasi kepemilikan DAN kelayakan
+--     kader tujuan secara eksplisit lalu melakukan update dengan
+--     privilese elevated — tidak melonggarkan RLS apa pun, hanya
+--     melewati jebakan self-referential di atas.
+--
+--     Fungsi ini di-grant EXECUTE ke `authenticated` (dipanggil langsung
+--     lewat .rpc() dari client), bukan cuma dari transferSessionCore —
+--     jadi pengecekan kepemilikan DAN kelayakan kader tujuan di sini
+--     adalah gerbang otorisasi utama untuk endpoint ini, bukan sekadar
+--     defense-in-depth di belakang pengecekan yang sama di TypeScript.
+--     Kombinasi cek kepemilikan + update jadi satu statement (bukan
+--     select-lalu-update terpisah) supaya atomik.
 -- -------------------------------------------------------------
 create or replace function public.transfer_session(p_session_id uuid, p_to_kader_id uuid)
 returns void
@@ -596,20 +604,25 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
-declare
-  v_current_assigned uuid;
 begin
-  select assigned_to into v_current_assigned
-  from public.sessions
-  where id = p_session_id;
-
-  if v_current_assigned is null or v_current_assigned <> auth.uid() then
-    raise exception 'Sesi tidak ditemukan';
+  if not exists (
+    select 1 from public.profiles
+    where id = p_to_kader_id
+      and role = 'kader'
+      and is_verified
+      and status = 'available'
+  ) then
+    raise exception 'Kader tidak ditemukan';
   end if;
 
   update public.sessions
   set assigned_to = p_to_kader_id
-  where id = p_session_id;
+  where id = p_session_id
+    and assigned_to = auth.uid();
+
+  if not found then
+    raise exception 'Sesi tidak ditemukan';
+  end if;
 end;
 $$;
 

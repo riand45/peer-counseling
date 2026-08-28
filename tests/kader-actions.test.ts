@@ -402,4 +402,38 @@ describe("transferSessionCore", () => {
       await deleteTestUser(target.id);
     }
   });
+
+  it("rejects an ineligible target at the RPC level, even calling transfer_session directly", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const busyTarget = await createSignedInTestKader({ status: "busy" });
+    const unverifiedTarget = await createSignedInTestKader({ status: "available", verified: false });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const busyResult = await client.rpc("transfer_session", {
+        p_session_id: sessionId,
+        p_to_kader_id: busyTarget.id,
+      });
+      expect(busyResult.error).toBeTruthy();
+
+      const unverifiedResult = await client.rpc("transfer_session", {
+        p_session_id: sessionId,
+        p_to_kader_id: unverifiedTarget.id,
+      });
+      expect(unverifiedResult.error).toBeTruthy();
+
+      const service = getServiceClient();
+      const { data: session } = await service.from("sessions").select("assigned_to").eq("id", sessionId).single();
+      expect(session?.assigned_to).toBe(id);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(busyTarget.id);
+      await deleteTestUser(unverifiedTarget.id);
+    }
+  });
 });
