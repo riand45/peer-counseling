@@ -55,13 +55,17 @@ function downloadCsv(stats: GuruStatistics, rangeDays: StatisticsRangeDays) {
   const a = document.createElement("a");
   a.href = url;
   a.download = `statistik-guru-${rangeDays}hari.csv`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 export function StatisticsScreen() {
   const [rangeDays, setRangeDays] = useState<StatisticsRangeDays>(30);
-  const [stats, setStats] = useState<GuruStatistics | null>(null);
+  const [statsState, setStatsState] = useState<{ rangeDays: StatisticsRangeDays; data: GuruStatistics } | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,7 +73,7 @@ export function StatisticsScreen() {
     getGuruStatistics(rangeDays)
       .then((data) => {
         if (active) {
-          setStats(data);
+          setStatsState({ rangeDays, data });
           setError(null);
         }
       })
@@ -80,6 +84,8 @@ export function StatisticsScreen() {
       active = false;
     };
   }, [rangeDays]);
+
+  const stats = statsState?.rangeDays === rangeDays ? statsState.data : null;
 
   return (
     <div className="flex flex-col gap-6">
