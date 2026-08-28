@@ -35,3 +35,5 @@ export type SessionStudentInfo = {
   topics: Topic[];
   status: SessionStatus;
 };
+
+export const MAX_BIO_LENGTH = 150;

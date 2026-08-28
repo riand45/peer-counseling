@@ -4,7 +4,10 @@ import {
   updateKaderStatusCore,
   endKaderSessionCore,
   getSessionStudentInfoCore,
+  updateKaderBioCore,
+  updateKaderTopicsCore,
 } from "@/lib/kader/core";
+import { MAX_BIO_LENGTH } from "@/lib/kader/types";
 import {
   getServiceClient,
   createSignedInTestKader,
@@ -214,6 +217,57 @@ describe("getSessionStudentInfoCore", () => {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
       await deleteTestUser(owner.id);
+    }
+  });
+});
+
+describe("updateKaderBioCore", () => {
+  it("trims and saves the bio for the signed-in kader", async () => {
+    const { id, client } = await createSignedInTestKader();
+    try {
+      await updateKaderBioCore(client, "  Suka dengerin cerita orang lain.  ");
+      const service = getServiceClient();
+      const { data } = await service.from("profiles").select("bio").eq("id", id).single();
+      expect(data?.bio).toBe("Suka dengerin cerita orang lain.");
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("stores an empty/whitespace-only bio as null", async () => {
+    const { id, client } = await createSignedInTestKader();
+    try {
+      await updateKaderBioCore(client, "   ");
+      const service = getServiceClient();
+      const { data } = await service.from("profiles").select("bio").eq("id", id).single();
+      expect(data?.bio).toBeNull();
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects a bio longer than the max length", async () => {
+    const { id, client } = await createSignedInTestKader();
+    try {
+      await expect(updateKaderBioCore(client, "a".repeat(MAX_BIO_LENGTH + 1))).rejects.toThrow(
+        "Bio maksimal",
+      );
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("updateKaderTopicsCore", () => {
+  it("updates the signed-in kader's topics", async () => {
+    const { id, client } = await createSignedInTestKader();
+    try {
+      await updateKaderTopicsCore(client, ["akademik", "keluarga"]);
+      const service = getServiceClient();
+      const { data } = await service.from("profiles").select("topics").eq("id", id).single();
+      expect(data?.topics).toEqual(["akademik", "keluarga"]);
+    } finally {
+      await deleteTestUser(id);
     }
   });
 });

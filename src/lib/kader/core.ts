@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getStudentDisplayName } from "@/lib/student/types";
 import type { KaderStatus, Topic } from "@/lib/student/types";
 import type { KaderDashboard, KaderDashboardSession, SessionStatus, SessionStudentInfo } from "./types";
+import { MAX_BIO_LENGTH } from "./types";
 
 export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<KaderDashboard> {
   const {
@@ -149,4 +150,42 @@ export async function getSessionStudentInfoCore(
     topics: (session.topics as Topic[]) ?? [],
     status: session.status as SessionStatus,
   };
+}
+
+export async function updateKaderBioCore(supabase: SupabaseClient, bio: string): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const trimmed = bio.trim();
+  if (trimmed.length > MAX_BIO_LENGTH) {
+    throw new Error(`Bio maksimal ${MAX_BIO_LENGTH} karakter`);
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ bio: trimmed.length > 0 ? trimmed : null })
+    .eq("id", user.id);
+
+  if (error) {
+    throw new Error("Gagal menyimpan bio");
+  }
+}
+
+export async function updateKaderTopicsCore(supabase: SupabaseClient, topics: Topic[]): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const { error } = await supabase.from("profiles").update({ topics }).eq("id", user.id);
+
+  if (error) {
+    throw new Error("Gagal memperbarui topik");
+  }
 }
