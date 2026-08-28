@@ -6,6 +6,8 @@ import {
   getSessionStudentInfoCore,
   updateKaderBioCore,
   updateKaderTopicsCore,
+  getAvailableKaderForTransferCore,
+  transferSessionCore,
 } from "@/lib/kader/core";
 import { MAX_BIO_LENGTH } from "@/lib/kader/types";
 import {
@@ -268,6 +270,136 @@ describe("updateKaderTopicsCore", () => {
       expect(data?.topics).toEqual(["akademik", "keluarga"]);
     } finally {
       await deleteTestUser(id);
+    }
+  });
+});
+
+describe("getAvailableKaderForTransferCore", () => {
+  it("lists other verified, available kader, excluding self, busy, and unverified kader", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const other = await createSignedInTestKader({ status: "available" });
+    const busy = await createSignedInTestKader({ status: "busy" });
+    const unverified = await createSignedInTestKader({ status: "available", verified: false });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const result = await getAvailableKaderForTransferCore(client, sessionId);
+      const ids = result.map((k) => k.id);
+      expect(ids).toContain(other.id);
+      expect(ids).not.toContain(id);
+      expect(ids).not.toContain(busy.id);
+      expect(ids).not.toContain(unverified.id);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(other.id);
+      await deleteTestUser(busy.id);
+      await deleteTestUser(unverified.id);
+    }
+  });
+
+  it("throws for a session not assigned to this kader", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const owner = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: owner.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(getAvailableKaderForTransferCore(client, sessionId)).rejects.toThrow(
+        "Sesi tidak ditemukan",
+      );
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(owner.id);
+    }
+  });
+});
+
+describe("transferSessionCore", () => {
+  it("reassigns the session to the target kader and logs a transfer assignment", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const target = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+
+      await transferSessionCore(client, { sessionId, toKaderId: target.id });
+
+      const { data: session } = await service
+        .from("sessions")
+        .select("assigned_to")
+        .eq("id", sessionId)
+        .single();
+      expect(session?.assigned_to).toBe(target.id);
+
+      const { data: assignment } = await service
+        .from("session_assignments")
+        .select("from_id, to_id, changed_by, reason")
+        .eq("session_id", sessionId)
+        .eq("reason", "transfer")
+        .single();
+      expect(assignment?.from_id).toBe(id);
+      expect(assignment?.to_id).toBe(target.id);
+      expect(assignment?.changed_by).toBe(id);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(target.id);
+    }
+  });
+
+  it("throws for a session id that does not belong to this kader", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const owner = await createSignedInTestKader({ status: "available" });
+    const target = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: owner.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(
+        transferSessionCore(client, { sessionId, toKaderId: target.id }),
+      ).rejects.toThrow("Sesi tidak ditemukan");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(owner.id);
+      await deleteTestUser(target.id);
+    }
+  });
+
+  it("throws when the target kader is not available", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const target = await createSignedInTestKader({ status: "busy" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(
+        transferSessionCore(client, { sessionId, toKaderId: target.id }),
+      ).rejects.toThrow("Kader ini sudah tidak tersedia");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(target.id);
     }
   });
 });

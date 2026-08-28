@@ -9,8 +9,10 @@ import {
   getSessionStudentInfoCore,
   updateKaderBioCore,
   updateKaderTopicsCore,
+  getAvailableKaderForTransferCore,
+  transferSessionCore,
 } from "./core";
-import type { KaderStatus, Topic } from "@/lib/student/types";
+import type { KaderStatus, KaderSummary, Topic } from "@/lib/student/types";
 import type { KaderDashboard, SessionStudentInfo } from "./types";
 
 export async function getKaderDashboard(): Promise<KaderDashboard> {
@@ -46,4 +48,15 @@ export async function updateKaderTopics(topics: Topic[]): Promise<void> {
   const supabase = await createClient();
   await updateKaderTopicsCore(supabase, topics);
   revalidatePath("/kader/profil");
+}
+
+export async function getAvailableKaderForTransfer(input: { sessionId: string }): Promise<KaderSummary[]> {
+  const supabase = await createClient();
+  return getAvailableKaderForTransferCore(supabase, input.sessionId);
+}
+
+export async function transferSession(input: { sessionId: string; toKaderId: string }): Promise<void> {
+  const supabase = await createClient();
+  await transferSessionCore(supabase, input);
+  revalidatePath("/kader");
 }
