@@ -51,7 +51,10 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
 
   function loadDetail() {
     return getConsultationDetail({ sessionId })
-      .then(setDetail)
+      .then((data) => {
+        setDetail(data);
+        setLoadError(null);
+      })
       .catch((err) => setLoadError(err instanceof Error ? err.message : "Gagal memuat detail sesi"));
   }
 
