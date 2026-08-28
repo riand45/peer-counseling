@@ -1,10 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore } from "./core";
+import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore, getGuruStatisticsCore } from "./core";
 import { revalidatePath } from "next/cache";
 import type { SessionStatus } from "@/lib/kader/types";
-import type { ConsultationDetail, ConsultationListResult, GuruDashboard } from "./types";
+import type { ConsultationDetail, ConsultationListResult, GuruDashboard, GuruStatistics, StatisticsRangeDays } from "./types";
 
 export async function getGuruDashboard(): Promise<GuruDashboard> {
   const supabase = await createClient();
@@ -52,4 +52,9 @@ export async function referToProfessional(input: { sessionId: string; note?: str
   const supabase = await createClient();
   await referToProfessionalCore(supabase, input);
   revalidatePath(`/guru/konsultasi/${input.sessionId}`);
+}
+
+export async function getGuruStatistics(rangeDays: StatisticsRangeDays): Promise<GuruStatistics> {
+  const supabase = await createClient();
+  return getGuruStatisticsCore(supabase, rangeDays);
 }

@@ -62,3 +62,21 @@ export type ConsultationDetail = {
   archivedAt: string | null;
   latestReferral: { note: string | null; createdAt: string } | null;
 };
+
+export type StatisticsRangeDays = 7 | 30 | 90;
+
+export type StatisticsTrendPoint = { date: string; count: number };
+
+export type StatusDistributionEntry = { status: SessionStatus; count: number };
+
+export type TopicDistributionEntry = { topic: Topic; count: number };
+
+export type GuruStatistics = {
+  totalSessions: number;
+  activeStudents: number;
+  avgDurationMinutes: number | null;
+  escalationCount: number;
+  trend: StatisticsTrendPoint[];
+  statusDistribution: StatusDistributionEntry[];
+  topicDistribution: TopicDistributionEntry[];
+};

@@ -3,6 +3,7 @@ import { getGuruDashboardCore } from "@/lib/guru/core";
 import { listConsultationsCore } from "@/lib/guru/core";
 import { getConsultationDetailCore } from "@/lib/guru/core";
 import { endConsultationAsGuruCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore } from "@/lib/guru/core";
+import { getGuruStatisticsCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -696,6 +697,76 @@ describe("referToProfessionalCore", () => {
       );
     } finally {
       for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("getGuruStatisticsCore", () => {
+  it("returns an all-zero, well-formed shape for an unverified guru (RLS-filtered to zero rows)", async () => {
+    const { id, client } = await createSignedInTestGuru({ verified: false });
+    try {
+      const result = await getGuruStatisticsCore(client, 30);
+      expect(result.totalSessions).toBe(0);
+      expect(result.activeStudents).toBe(0);
+      expect(result.avgDurationMinutes).toBeNull();
+      expect(result.escalationCount).toBe(0);
+      expect(result.trend.every((point) => point.count === 0)).toBe(true);
+      expect(result.statusDistribution.every((entry) => entry.count === 0)).toBe(true);
+      expect(result.topicDistribution.every((entry) => entry.count === 0)).toBe(true);
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("returns a trend array spanning exactly rangeDays days ending today (UTC), in order", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      const result = await getGuruStatisticsCore(client, 7);
+      expect(result.trend).toHaveLength(7);
+      const today = new Date().toISOString().slice(0, 10);
+      expect(result.trend[result.trend.length - 1].date).toBe(today);
+      const dates = result.trend.map((point) => point.date);
+      expect(dates).toEqual([...dates].sort());
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("covers all 4 statuses in order and sums to totalSessions", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      const result = await getGuruStatisticsCore(client, 30);
+      expect(result.statusDistribution.map((entry) => entry.status)).toEqual([
+        "waiting",
+        "active",
+        "escalated",
+        "ended",
+      ]);
+      const sum = result.statusDistribution.reduce((total, entry) => total + entry.count, 0);
+      expect(sum).toBe(result.totalSessions);
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("covers all 7 topics in order, and the trend sums to totalSessions", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      const result = await getGuruStatisticsCore(client, 30);
+      expect(result.topicDistribution.map((entry) => entry.topic)).toEqual([
+        "pertemanan",
+        "bullying",
+        "keluarga",
+        "akademik",
+        "perasaan",
+        "lingkungan_sekolah",
+        "lainnya",
+      ]);
+      const trendSum = result.trend.reduce((total, point) => total + point.count, 0);
+      expect(trendSum).toBe(result.totalSessions);
+      expect(result.activeStudents).toBeLessThanOrEqual(result.totalSessions);
+    } finally {
       await deleteTestUser(id);
     }
   });
