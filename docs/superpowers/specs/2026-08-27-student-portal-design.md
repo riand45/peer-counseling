@@ -179,3 +179,41 @@ the row's `student_local_id` before acting (per Foundation §3):
   doesn't exist until Phase 2. Phase 1 routes them to `/student/topik`
   instead, with a one-line TODO comment marking the swap for Phase 2.
 - Report icon in the chat header is present but inert in Phase 1.
+
+## 9. Phase 2 addendum (2026-08-28) — resolved during Phase 2 kickoff
+
+Resolved while starting the Phase 2 implementation plan, after re-surveying the
+codebase (Phase 1 has been live for a while; kader and guru portals landed in
+the interim):
+
+- **StudentShell nav is exactly 2 items**: "Ruang Chat" (`/student/cerita-saya`)
+  and "Profil" (`/student/profil`). The `cerita_saya`/`profil_anonim` mockups'
+  sidebar also shows Beranda/Jurnal/Materi/Settings/Logout and a "Buka Sesi
+  Chat" button, none of which have any spec or scope — omitted rather than
+  shipped as dead links, the same pattern already used for kader and guru.
+- **Avatars render as an animal emoji inside a colored circle**, not custom
+  inline-SVG illustrations. This still satisfies §7's actual requirement (no
+  external avatar service, nothing ever leaves the app) while matching the
+  initials-circle avatar style already used everywhere else in the app and
+  avoiding bespoke illustration work for 8 icons. `src/lib/student/avatars.ts`
+  maps each of the 8 seeds in `AVATAR_SEED_LABELS` to one emoji.
+- **The Profil mockup's "Riwayat Aktivitas" button is omitted** — it isn't in
+  §6/§7's scope and would just duplicate the "Ruang Chat" nav item.
+- **The Cerita Saya mockup's filter icon is omitted** — §3 only calls for
+  client-side search over the fetched list, not a separate filter control.
+- **The chat header's report/flag icon does not exist yet.** §8's Phase-1 gap
+  said it would be "present but disabled/hidden" — re-checking
+  `src/components/student/ChatScreen.tsx` found no such icon at all. Phase 2
+  adds it fresh (and wires it straight to the report `Modal`) rather than
+  un-hiding something pre-existing.
+- **The `laporkan_sesi` mockup leaves the "Lainnya" reason's optional detail
+  field unimplemented** (its own code comment says so). Phase 2 fills this
+  gap: selecting `reason: "other"` reveals a textarea bound to
+  `submitSessionReport`'s optional `details` param; the other three reasons
+  submit with no details field shown.
+- **`Modal.tsx`'s `max-w-sm` → `max-w-[24rem]` fix (§7) is confirmed still
+  needed** — not applied anywhere yet.
+- Two other pre-existing, unrelated call sites still use the colliding
+  `max-w-sm` Tailwind class (`src/app/kader/(protected)/layout.tsx`,
+  `src/components/guru/ConsultationListScreen.tsx`) — out of scope for this
+  phase, left as-is.
