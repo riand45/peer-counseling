@@ -30,6 +30,21 @@ describe("schema: anon has no direct access to student-facing tables", () => {
     });
     expect(error?.code).toBe("42501");
   });
+
+  it("cannot select from professional_referrals", async () => {
+    const anon = getAnonClient();
+    const { error } = await anon.from("professional_referrals").select("id");
+    expect(error?.code).toBe("42501");
+  });
+
+  it("cannot insert into professional_referrals", async () => {
+    const anon = getAnonClient();
+    const { error } = await anon.from("professional_referrals").insert({
+      session_id: "00000000-0000-0000-0000-000000000000",
+      referred_by: "00000000-0000-0000-0000-000000000000",
+    });
+    expect(error?.code).toBe("42501");
+  });
 });
 
 describe("schema: signup trigger fills in profiles from user metadata", () => {

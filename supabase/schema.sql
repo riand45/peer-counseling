@@ -575,3 +575,42 @@ select
   coalesce((u.raw_user_meta_data ->> 'role')::public.app_role, 'kader')
 from auth.users u
 on conflict (id) do nothing;
+
+-- -------------------------------------------------------------
+-- 23. sessions.archived_at (Guru Phase 2: "Hapus Log" — arsip, bukan hapus)
+-- -------------------------------------------------------------
+alter table public.sessions add column if not exists archived_at timestamptz;
+
+-- -------------------------------------------------------------
+-- 24. Tabel professional_referrals (Guru Phase 2: "Alihkan ke Profesional")
+-- -------------------------------------------------------------
+create table if not exists public.professional_referrals (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references public.sessions (id) on delete cascade,
+  referred_by uuid not null references public.profiles (id) on delete cascade,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.professional_referrals enable row level security;
+
+-- -------------------------------------------------------------
+-- 25. GRANTS — professional_referrals
+-- -------------------------------------------------------------
+revoke all on public.professional_referrals from anon, authenticated;
+grant select, insert on public.professional_referrals to authenticated;
+
+-- -------------------------------------------------------------
+-- 26. RLS POLICIES — professional_referrals (guru-only, append-only)
+-- -------------------------------------------------------------
+drop policy if exists "professional_referrals: guru baca" on public.professional_referrals;
+create policy "professional_referrals: guru baca"
+  on public.professional_referrals for select
+  to authenticated
+  using (public.is_guru());
+
+drop policy if exists "professional_referrals: guru buat" on public.professional_referrals;
+create policy "professional_referrals: guru buat"
+  on public.professional_referrals for insert
+  to authenticated
+  with check (public.is_guru() and referred_by = auth.uid());
