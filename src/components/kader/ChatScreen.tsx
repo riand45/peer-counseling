@@ -92,7 +92,11 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" disabled title="Segera hadir">
+          <Button
+            variant="ghost"
+            onClick={() => router.push(`/kader/alihkan/${sessionId}`)}
+            disabled={studentInfo?.status === "ended"}
+          >
             Alihkan
           </Button>
           <Button variant="ghost" disabled title="Segera hadir">
