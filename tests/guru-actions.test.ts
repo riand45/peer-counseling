@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getGuruDashboardCore } from "@/lib/guru/core";
 import { listConsultationsCore } from "@/lib/guru/core";
 import { getConsultationDetailCore } from "@/lib/guru/core";
-import { endConsultationAsGuruCore, takeOverConsultationCore } from "@/lib/guru/core";
+import { endConsultationAsGuruCore, takeOverConsultationCore, archiveSessionCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -528,6 +528,57 @@ describe("takeOverConsultationCore", () => {
       cleanup.push(() => deleteTestSession(sessionId));
 
       await expect(takeOverConsultationCore(client, sessionId)).rejects.toThrow("Sesi tidak ditemukan");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("archiveSessionCore", () => {
+  it("sets archived_at and hides the session from listConsultationsCore by default", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const uniqueName = `UjiHapusLog-${Date.now()}`;
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: uniqueName }).eq("id", localId);
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await archiveSessionCore(client, sessionId);
+
+      const { data } = await service.from("sessions").select("archived_at").eq("id", sessionId).single();
+      expect(data?.archived_at).toBeTruthy();
+
+      const listed = await listConsultationsCore(client, { search: uniqueName, page: 1 });
+      expect(listed.items).toHaveLength(0);
+      const listedWithArchived = await listConsultationsCore(client, {
+        search: uniqueName,
+        page: 1,
+        includeArchived: true,
+      });
+      expect(listedWithArchived.items[0].archived).toBe(true);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects an unverified guru via RLS", async () => {
+    const { id, client } = await createSignedInTestGuru({ verified: false });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(archiveSessionCore(client, sessionId)).rejects.toThrow(
+        "Gagal mengarsipkan sesi, coba lagi",
+      );
     } finally {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);

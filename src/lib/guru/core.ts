@@ -390,3 +390,16 @@ export async function takeOverConsultationCore(supabase: SupabaseClient, session
     throw new Error("Gagal mengambil alih percakapan");
   }
 }
+
+export async function archiveSessionCore(supabase: SupabaseClient, sessionId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("sessions")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", sessionId)
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    throw new Error("Gagal mengarsipkan sesi, coba lagi");
+  }
+}
