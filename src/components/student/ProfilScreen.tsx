@@ -17,7 +17,8 @@ export function ProfilScreen() {
   const router = useRouter();
   const studentLocalId = useRequireStudentIdentity();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [draftNickname, setDraftNickname] = useState("");
   const [saving, setSaving] = useState(false);
@@ -29,17 +30,17 @@ export function ProfilScreen() {
     if (!studentLocalId) return;
     getStudentProfile({ studentLocalId })
       .then(setProfile)
-      .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat profil"));
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Gagal memuat profil"));
   }, [studentLocalId]);
 
   if (!studentLocalId) {
     return null;
   }
 
-  if (error) {
+  if (loadError) {
     return (
       <p className="rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
-        {error}
+        {loadError}
       </p>
     );
   }
@@ -51,12 +52,12 @@ export function ProfilScreen() {
   const handleCycleAvatar = async () => {
     const seed = nextAvatarSeed(profile.avatarSeed);
     setCycling(true);
-    setError(null);
+    setActionError(null);
     try {
       await updateStudentProfile({ studentLocalId, avatarSeed: seed });
       setProfile({ ...profile, avatarSeed: seed });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal mengganti avatar");
+      setActionError(err instanceof Error ? err.message : "Gagal mengganti avatar");
     } finally {
       setCycling(false);
     }
@@ -64,13 +65,13 @@ export function ProfilScreen() {
 
   const handleSaveNickname = async () => {
     setSaving(true);
-    setError(null);
+    setActionError(null);
     try {
       await updateStudentProfile({ studentLocalId, nickname: draftNickname });
       setProfile({ ...profile, nickname: draftNickname.trim() || null });
       setEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menyimpan nama panggilan");
+      setActionError(err instanceof Error ? err.message : "Gagal menyimpan nama panggilan");
     } finally {
       setSaving(false);
     }
@@ -78,13 +79,13 @@ export function ProfilScreen() {
 
   const handleDelete = async () => {
     setDeleting(true);
-    setError(null);
+    setActionError(null);
     try {
       await deleteStudentIdentity({ studentLocalId });
       clearStudentLocalId();
       router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menghapus akun");
+      setActionError(err instanceof Error ? err.message : "Gagal menghapus akun");
       setDeleting(false);
       setConfirmingDelete(false);
     }
@@ -165,9 +166,9 @@ export function ProfilScreen() {
         </div>
       </div>
 
-      {error && (
+      {actionError && (
         <p className="rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
-          {error}
+          {actionError}
         </p>
       )}
 
