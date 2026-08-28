@@ -30,6 +30,7 @@ export function ReportModal({
   function handleClose() {
     setReason(null);
     setDetails("");
+    setSubmitting(false);
     setError(null);
     setSubmitted(false);
     onClose();
@@ -70,7 +71,9 @@ export function ReportModal({
   return (
     <Modal
       open={open}
-      onClose={handleClose}
+      onClose={() => {
+        if (!submitting) handleClose();
+      }}
       title="Laporkan Sesi"
       description="Laporanmu akan ditinjau oleh pihak sekolah secara rahasia."
       footer={
