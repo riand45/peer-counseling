@@ -7,6 +7,7 @@ import { ChatBubble } from "@/components/ui/ChatBubble";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
 import { endSession, getSessionKader } from "@/lib/student/actions";
 import { useRequireStudentIdentity } from "@/lib/student/useRequireStudentIdentity";
+import { ReportModal } from "./ReportModal";
 
 function KaderAvatar({ fullName }: { fullName?: string }) {
   const initial = fullName?.trim().charAt(0).toUpperCase() || "K";
@@ -47,6 +48,7 @@ function ChatSession({
   const [ending, setEnding] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [kaderInfo, setKaderInfo] = useState<{ fullName: string; status: string } | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { messages, error, send } = useSessionChat(sessionId, studentLocalId);
@@ -99,9 +101,19 @@ function ChatSession({
             {kaderInfo?.fullName ?? "Kader"}
           </p>
         </div>
-        <Button variant="ghost" onClick={handleEnd} disabled={ending}>
-          {ending ? "Mengakhiri..." : "Selesaikan Sesi"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setReportOpen(true)}
+            aria-label="Laporkan Sesi"
+            className="text-on-surface-variant hover:text-error"
+          >
+            🚩
+          </button>
+          <Button variant="ghost" onClick={handleEnd} disabled={ending}>
+            {ending ? "Mengakhiri..." : "Selesaikan Sesi"}
+          </Button>
+        </div>
       </header>
 
       <div className="border-b border-outline-variant bg-secondary-container px-sm py-2 text-label-sm text-on-secondary-container">
@@ -157,6 +169,13 @@ function ChatSession({
           Kirim
         </Button>
       </div>
+
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        sessionId={sessionId}
+        studentLocalId={studentLocalId}
+      />
     </main>
   );
 }
