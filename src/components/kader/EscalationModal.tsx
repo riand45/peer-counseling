@@ -20,6 +20,12 @@ export function EscalationModal({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function handleClose() {
+    setReason("");
+    setError(null);
+    onClose();
+  }
+
   async function handleSubmit() {
     setSending(true);
     setError(null);
@@ -37,12 +43,12 @@ export function EscalationModal({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title="Hubungi Guru/BK"
       description="Gunakan fitur ini jika kamu merasa kasus ini membutuhkan bantuan profesional dari guru atau konselor sekolah. Privasi tetap dijaga."
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={sending}>
+          <Button variant="ghost" onClick={handleClose} disabled={sending}>
             Batal
           </Button>
           <Button onClick={handleSubmit} disabled={sending}>
