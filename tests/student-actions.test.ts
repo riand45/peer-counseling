@@ -9,6 +9,7 @@ import {
   getStudentProfile,
   updateStudentProfile,
   deleteStudentIdentity,
+  submitSessionReport,
 } from "@/lib/student/actions";
 import {
   getServiceClient,
@@ -371,6 +372,55 @@ describe("updateStudentProfile", () => {
       ).rejects.toThrow("Avatar tidak dikenal");
     } finally {
       await deleteTestStudentIdentity(localId);
+    }
+  });
+});
+
+describe("submitSessionReport", () => {
+  it("inserts a session_reports row for the reporting student's own session", async () => {
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await submitSessionReport({
+        sessionId,
+        studentLocalId: localId,
+        reason: "other",
+        details: "Detail tambahan",
+      });
+
+      const service = getServiceClient();
+      const { data } = await service
+        .from("session_reports")
+        .select("reason, details, status")
+        .eq("session_id", sessionId)
+        .single();
+      expect(data?.reason).toBe("other");
+      expect(data?.details).toBe("Detail tambahan");
+      expect(data?.status).toBe("open");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+    }
+  });
+
+  it("rejects reporting a session that belongs to a different student", async () => {
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const otherLocalId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(otherLocalId));
+      const sessionId = await createTestSession({ studentLocalId: otherLocalId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(
+        submitSessionReport({ sessionId, studentLocalId: localId, reason: "uncomfortable" }),
+      ).rejects.toThrow("Tidak diizinkan");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
     }
   });
 });

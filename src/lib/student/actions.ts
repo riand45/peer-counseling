@@ -1,7 +1,14 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
-import type { Topic, KaderSummary, KaderStatus, StudentSessionSummary, StudentProfile } from "./types";
+import type {
+  Topic,
+  KaderSummary,
+  KaderStatus,
+  StudentSessionSummary,
+  StudentProfile,
+  ReportReason,
+} from "./types";
 import { AVATAR_SEED_LABELS } from "./types";
 
 function randomAvatarSeed(): string {
@@ -280,6 +287,39 @@ export async function updateStudentProfile(input: {
   if (error) {
     console.error("updateStudentProfile failed:", error);
     throw new Error("Gagal memperbarui profil");
+  }
+}
+
+export async function submitSessionReport(input: {
+  sessionId: string;
+  studentLocalId: string;
+  reason: ReportReason;
+  details?: string;
+}): Promise<void> {
+  const service = createServiceClient();
+
+  const { data: session, error: sessionError } = await service
+    .from("sessions")
+    .select("student_local_id")
+    .eq("id", input.sessionId)
+    .single();
+
+  if (sessionError || !session) {
+    throw new Error("Sesi tidak ditemukan");
+  }
+  if (session.student_local_id !== input.studentLocalId) {
+    throw new Error("Tidak diizinkan melaporkan sesi ini");
+  }
+
+  const { error } = await service.from("session_reports").insert({
+    session_id: input.sessionId,
+    reason: input.reason,
+    details: input.details?.trim() || null,
+  });
+
+  if (error) {
+    console.error("submitSessionReport failed:", error);
+    throw new Error("Gagal mengirim laporan");
   }
 }
 
