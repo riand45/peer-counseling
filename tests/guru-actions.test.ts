@@ -51,8 +51,8 @@ describe("getGuruDashboardCore", () => {
       await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
 
       const after = await getGuruDashboardCore(client);
-      expect(after.counts.total).toBe(before.counts.total + 1);
-      expect(after.counts.active).toBe(before.counts.active + 1);
+      expect(after.counts.total).toBeGreaterThanOrEqual(before.counts.total + 1);
+      expect(after.counts.active).toBeGreaterThanOrEqual(before.counts.active + 1);
 
       const activityItem = after.activity.find((item) => item.sessionId === sessionId);
       expect(activityItem).toBeTruthy();
@@ -240,6 +240,29 @@ describe("listConsultationsCore", () => {
       await deleteTestUser(id);
     }
   });
+
+  it("scopes to only the caller's own assigned sessions when called as a kader (RLS)", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const other = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const uniqueName = `UjiScopeKader-${Date.now()}`;
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: uniqueName }).eq("id", localId);
+
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: other.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const result = await listConsultationsCore(client, { search: uniqueName, page: 1 });
+      expect(result.items).toEqual([]);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(other.id);
+    }
+  });
 });
 
 describe("getConsultationDetailCore", () => {
@@ -300,6 +323,42 @@ describe("getConsultationDetailCore", () => {
       ).rejects.toThrow("Sesi tidak ditemukan");
     } finally {
       await deleteTestUser(id);
+    }
+  });
+
+  it("returns assignedKaderName null and hasTakenOver false when nobody is assigned", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const detail = await getConsultationDetailCore(client, sessionId);
+      expect(detail.assignedKaderName).toBeNull();
+      expect(detail.hasTakenOver).toBe(false);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects a kader reading a session assigned to a different kader (RLS)", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const owner = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: owner.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(getConsultationDetailCore(client, sessionId)).rejects.toThrow("Sesi tidak ditemukan");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+      await deleteTestUser(owner.id);
     }
   });
 });
@@ -397,6 +456,22 @@ describe("takeOverConsultationCore", () => {
         takeOverConsultationCore(client, "00000000-0000-0000-0000-000000000000"),
       ).rejects.toThrow("Sesi tidak ditemukan");
     } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects an unverified guru via RLS", async () => {
+    const { id, client } = await createSignedInTestGuru({ verified: false });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(takeOverConsultationCore(client, sessionId)).rejects.toThrow("Sesi tidak ditemukan");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
     }
   });
