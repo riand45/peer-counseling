@@ -8,3 +8,7 @@ export function getStudentLocalId(): string | null {
 export function setStudentLocalId(id: string): void {
   window.localStorage.setItem(STORAGE_KEY, id);
 }
+
+export function clearStudentLocalId(): void {
+  window.localStorage.removeItem(STORAGE_KEY);
+}
