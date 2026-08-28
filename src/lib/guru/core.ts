@@ -333,3 +333,43 @@ export async function endConsultationAsGuruCore(supabase: SupabaseClient, sessio
     throw new Error("Gagal mengakhiri sesi, coba lagi");
   }
 }
+
+export async function takeOverConsultationCore(supabase: SupabaseClient, sessionId: string): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const { data: session, error: sessionError } = await supabase
+    .from("sessions")
+    .select("assigned_to")
+    .eq("id", sessionId)
+    .single();
+
+  if (sessionError || !session) {
+    throw new Error("Sesi tidak ditemukan");
+  }
+
+  const { error: updateError } = await supabase
+    .from("sessions")
+    .update({ assigned_to: user.id })
+    .eq("id", sessionId);
+
+  if (updateError) {
+    throw new Error("Gagal mengambil alih percakapan");
+  }
+
+  const { error: assignmentError } = await supabase.from("session_assignments").insert({
+    session_id: sessionId,
+    from_id: session.assigned_to,
+    to_id: user.id,
+    changed_by: user.id,
+    reason: "takeover",
+  });
+
+  if (assignmentError) {
+    throw new Error("Gagal mencatat pengambilalihan");
+  }
+}

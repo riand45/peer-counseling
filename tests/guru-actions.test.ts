@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getGuruDashboardCore } from "@/lib/guru/core";
 import { listConsultationsCore } from "@/lib/guru/core";
 import { getConsultationDetailCore } from "@/lib/guru/core";
-import { endConsultationAsGuruCore } from "@/lib/guru/core";
+import { endConsultationAsGuruCore, takeOverConsultationCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -347,6 +347,56 @@ describe("endConsultationAsGuruCore", () => {
       );
     } finally {
       for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("takeOverConsultationCore", () => {
+  it("reassigns the session to the guru and logs a takeover assignment", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const kader = await createSignedInTestKader({ status: "available" });
+      cleanup.push(() => deleteTestUser(kader.id));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: kader.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+
+      await takeOverConsultationCore(client, sessionId);
+
+      const { data: session } = await service
+        .from("sessions")
+        .select("assigned_to")
+        .eq("id", sessionId)
+        .single();
+      expect(session?.assigned_to).toBe(id);
+
+      const { data: assignment } = await service
+        .from("session_assignments")
+        .select("from_id, to_id, changed_by, reason")
+        .eq("session_id", sessionId)
+        .eq("reason", "takeover")
+        .single();
+      expect(assignment?.from_id).toBe(kader.id);
+      expect(assignment?.to_id).toBe(id);
+      expect(assignment?.changed_by).toBe(id);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("throws for a session id that does not exist", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      await expect(
+        takeOverConsultationCore(client, "00000000-0000-0000-0000-000000000000"),
+      ).rejects.toThrow("Sesi tidak ditemukan");
+    } finally {
       await deleteTestUser(id);
     }
   });

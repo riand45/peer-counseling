@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore } from "./core";
+import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore, takeOverConsultationCore } from "./core";
 import { revalidatePath } from "next/cache";
 import type { SessionStatus } from "@/lib/kader/types";
 import type { ConsultationDetail, ConsultationListResult, GuruDashboard } from "./types";
@@ -30,5 +30,11 @@ export async function endConsultationAsGuru(input: { sessionId: string }): Promi
   await endConsultationAsGuruCore(supabase, input.sessionId);
   revalidatePath("/guru");
   revalidatePath("/guru/konsultasi");
+  revalidatePath(`/guru/konsultasi/${input.sessionId}`);
+}
+
+export async function takeOverConsultation(input: { sessionId: string }): Promise<void> {
+  const supabase = await createClient();
+  await takeOverConsultationCore(supabase, input.sessionId);
   revalidatePath(`/guru/konsultasi/${input.sessionId}`);
 }
