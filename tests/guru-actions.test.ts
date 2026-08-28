@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getGuruDashboardCore } from "@/lib/guru/core";
 import { listConsultationsCore } from "@/lib/guru/core";
 import { getConsultationDetailCore } from "@/lib/guru/core";
+import { endConsultationAsGuruCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -298,6 +299,54 @@ describe("getConsultationDetailCore", () => {
         getConsultationDetailCore(client, "00000000-0000-0000-0000-000000000000"),
       ).rejects.toThrow("Sesi tidak ditemukan");
     } finally {
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("endConsultationAsGuruCore", () => {
+  it("marks any session ended, regardless of which kader it's assigned to", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const kader = await createSignedInTestKader({ status: "available" });
+      cleanup.push(() => deleteTestUser(kader.id));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: kader.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+
+      await endConsultationAsGuruCore(client, sessionId);
+
+      const { data } = await service
+        .from("sessions")
+        .select("status, ended_at")
+        .eq("id", sessionId)
+        .single();
+      expect(data?.status).toBe("ended");
+      expect(data?.ended_at).toBeTruthy();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects an unverified guru via RLS", async () => {
+    const { id, client } = await createSignedInTestGuru({ verified: false });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(endConsultationAsGuruCore(client, sessionId)).rejects.toThrow(
+        "Gagal mengakhiri sesi, coba lagi",
+      );
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
     }
   });

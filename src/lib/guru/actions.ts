@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore } from "./core";
+import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore } from "./core";
+import { revalidatePath } from "next/cache";
 import type { SessionStatus } from "@/lib/kader/types";
 import type { ConsultationDetail, ConsultationListResult, GuruDashboard } from "./types";
 
@@ -22,4 +23,12 @@ export async function listConsultations(input: {
 export async function getConsultationDetail(input: { sessionId: string }): Promise<ConsultationDetail> {
   const supabase = await createClient();
   return getConsultationDetailCore(supabase, input.sessionId);
+}
+
+export async function endConsultationAsGuru(input: { sessionId: string }): Promise<void> {
+  const supabase = await createClient();
+  await endConsultationAsGuruCore(supabase, input.sessionId);
+  revalidatePath("/guru");
+  revalidatePath("/guru/konsultasi");
+  revalidatePath(`/guru/konsultasi/${input.sessionId}`);
 }

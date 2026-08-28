@@ -320,3 +320,16 @@ export async function getConsultationDetailCore(
     createdAt: session.created_at as string,
   };
 }
+
+export async function endConsultationAsGuruCore(supabase: SupabaseClient, sessionId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("sessions")
+    .update({ status: "ended", ended_at: new Date().toISOString() })
+    .eq("id", sessionId)
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    throw new Error("Gagal mengakhiri sesi, coba lagi");
+  }
+}
