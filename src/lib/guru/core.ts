@@ -15,6 +15,46 @@ import type {
 const ACTIVITY_LIMIT = 10;
 const ATTENTION_LIMIT = 20;
 
+async function resolveStudentDisplayNames(
+  supabase: SupabaseClient,
+  studentLocalIds: string[],
+): Promise<Map<string, { nickname: string | null; avatar_seed: string | null }>> {
+  const identityById = new Map<string, { nickname: string | null; avatar_seed: string | null }>();
+  if (studentLocalIds.length === 0) {
+    return identityById;
+  }
+  const service = createServiceClient();
+  const { data: identities } = await service
+    .from("student_identities")
+    .select("id, nickname, avatar_seed")
+    .in("id", studentLocalIds);
+  for (const identity of identities ?? []) {
+    identityById.set(identity.id as string, {
+      nickname: identity.nickname as string | null,
+      avatar_seed: identity.avatar_seed as string | null,
+    });
+  }
+  return identityById;
+}
+
+async function resolveKaderNames(
+  supabase: SupabaseClient,
+  kaderIds: string[],
+): Promise<Map<string, string>> {
+  const kaderNameById = new Map<string, string>();
+  if (kaderIds.length === 0) {
+    return kaderNameById;
+  }
+  const { data: kaderProfiles } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", kaderIds);
+  for (const row of kaderProfiles ?? []) {
+    kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Kader");
+  }
+  return kaderNameById;
+}
+
 export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<GuruDashboard> {
   const {
     data: { user },
@@ -132,20 +172,7 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
   }
 
   const studentLocalIds = [...new Set([...sessionInfoById.values()].map((info) => info.student_local_id))];
-  const identityById = new Map<string, { nickname: string | null; avatar_seed: string | null }>();
-  if (studentLocalIds.length > 0) {
-    const service = createServiceClient();
-    const { data: identities } = await service
-      .from("student_identities")
-      .select("id, nickname, avatar_seed")
-      .in("id", studentLocalIds);
-    for (const identity of identities ?? []) {
-      identityById.set(identity.id as string, {
-        nickname: identity.nickname as string | null,
-        avatar_seed: identity.avatar_seed as string | null,
-      });
-    }
-  }
+  const identityById = await resolveStudentDisplayNames(supabase, studentLocalIds);
 
   const kaderIds = [
     ...new Set(
@@ -154,16 +181,7 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
         .filter((kaderId): kaderId is string => Boolean(kaderId)),
     ),
   ];
-  const kaderNameById = new Map<string, string>();
-  if (kaderIds.length > 0) {
-    const { data: kaderProfiles } = await supabase
-      .from("profiles")
-      .select("id, full_name")
-      .in("id", kaderIds);
-    for (const row of kaderProfiles ?? []) {
-      kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Kader");
-    }
-  }
+  const kaderNameById = await resolveKaderNames(supabase, kaderIds);
 
   function displayNameForSession(sessionId: string): string {
     const info = sessionInfoById.get(sessionId);
@@ -224,20 +242,7 @@ export async function listConsultationsCore(
   const sessionRows = sessions ?? [];
 
   const studentLocalIds = [...new Set(sessionRows.map((row) => row.student_local_id as string))];
-  const identityById = new Map<string, { nickname: string | null; avatar_seed: string | null }>();
-  if (studentLocalIds.length > 0) {
-    const service = createServiceClient();
-    const { data: identities } = await service
-      .from("student_identities")
-      .select("id, nickname, avatar_seed")
-      .in("id", studentLocalIds);
-    for (const identity of identities ?? []) {
-      identityById.set(identity.id as string, {
-        nickname: identity.nickname as string | null,
-        avatar_seed: identity.avatar_seed as string | null,
-      });
-    }
-  }
+  const identityById = await resolveStudentDisplayNames(supabase, studentLocalIds);
 
   const kaderIds = [
     ...new Set(
@@ -246,16 +251,7 @@ export async function listConsultationsCore(
         .filter((kaderId): kaderId is string => Boolean(kaderId)),
     ),
   ];
-  const kaderNameById = new Map<string, string>();
-  if (kaderIds.length > 0) {
-    const { data: kaderProfiles } = await supabase
-      .from("profiles")
-      .select("id, full_name")
-      .in("id", kaderIds);
-    for (const row of kaderProfiles ?? []) {
-      kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Kader");
-    }
-  }
+  const kaderNameById = await resolveKaderNames(supabase, kaderIds);
 
   const allItems: ConsultationListItem[] = sessionRows.map((row) => {
     const identity = identityById.get(row.student_local_id as string);
