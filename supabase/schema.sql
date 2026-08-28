@@ -614,3 +614,41 @@ create policy "professional_referrals: guru buat"
   on public.professional_referrals for insert
   to authenticated
   with check (public.is_guru() and referred_by = auth.uid());
+
+-- -------------------------------------------------------------
+-- 27. Trigger: lindungi kolom archived_at di sessions
+--
+--     Policy "sessions: kader update sesi sendiri" mengizinkan kader
+--     meng-update BARIS sesi yang ditugaskan padanya dengan
+--     `with check (true)` — RLS tidak bisa membatasi KOLOM mana yang
+--     boleh diubah, jadi tanpa trigger ini kader bisa PATCH archived_at
+--     di sesinya sendiri dan menyembunyikannya dari semua tampilan guru
+--     (Beranda, Daftar Konsultasi, Statistik) sambil sesi tetap
+--     berjalan normal — kebalikan dari maksud "Hapus Log" (aksi guru).
+--
+--     Sama seperti protect_profile_privileged_columns: trigger before
+--     update yang mengembalikan archived_at ke nilai lama kalau pelaku
+--     update bukan is_guru(), dengan syarat auth.uid() is not null agar
+--     service_role dan SQL langsung (Dashboard SQL Editor) tetap bisa
+--     menulis kolom ini.
+-- -------------------------------------------------------------
+create or replace function public.protect_sessions_archived_at()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.archived_at is distinct from old.archived_at
+     and auth.uid() is not null
+     and not public.is_guru() then
+    new.archived_at := old.archived_at;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_session_archived_at_update on public.sessions;
+create trigger on_session_archived_at_update
+  before update on public.sessions
+  for each row execute procedure public.protect_sessions_archived_at();

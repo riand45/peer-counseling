@@ -7,6 +7,9 @@ import {
   signInTestUser,
   getAnonClient,
   getServiceClient,
+  createSignedInTestKader,
+  createTestSession,
+  deleteTestSession,
 } from "./helpers";
 
 describe("schema: anon has no direct access to student-facing tables", () => {
@@ -247,6 +250,32 @@ describe("schema: kader/guru RLS scoping on sessions", () => {
       for (const fn of cleanup.reverse()) {
         await fn();
       }
+    }
+  });
+});
+
+describe("schema: sessions.archived_at is protected from kader self-update", () => {
+  it("a kader's own update to archived_at is silently reverted", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const { error } = await client
+        .from("sessions")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", sessionId);
+      expect(error).toBeNull();
+
+      const service = getServiceClient();
+      const { data } = await service.from("sessions").select("archived_at").eq("id", sessionId).single();
+      expect(data?.archived_at).toBeNull();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
     }
   });
 });
