@@ -59,4 +59,6 @@ export type ConsultationDetail = {
   topics: Topic[];
   status: SessionStatus;
   createdAt: string;
+  archivedAt: string | null;
+  latestReferral: { note: string | null; createdAt: string } | null;
 };

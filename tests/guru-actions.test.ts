@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getGuruDashboardCore } from "@/lib/guru/core";
 import { listConsultationsCore } from "@/lib/guru/core";
 import { getConsultationDetailCore } from "@/lib/guru/core";
-import { endConsultationAsGuruCore, takeOverConsultationCore, archiveSessionCore } from "@/lib/guru/core";
+import { endConsultationAsGuruCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -419,6 +419,52 @@ describe("getConsultationDetailCore", () => {
       await deleteTestUser(owner.id);
     }
   });
+
+  it("returns archivedAt null and latestReferral null for a fresh session", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const detail = await getConsultationDetailCore(client, sessionId);
+      expect(detail.archivedAt).toBeNull();
+      expect(detail.latestReferral).toBeNull();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("returns the archived timestamp and the most recent referral", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service
+        .from("sessions")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", sessionId);
+      await service.from("professional_referrals").insert({
+        session_id: sessionId,
+        referred_by: id,
+        note: "Butuh pendampingan lanjutan",
+      });
+
+      const detail = await getConsultationDetailCore(client, sessionId);
+      expect(detail.archivedAt).toBeTruthy();
+      expect(detail.latestReferral?.note).toBe("Butuh pendampingan lanjutan");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
 });
 
 describe("endConsultationAsGuruCore", () => {
@@ -578,6 +624,75 @@ describe("archiveSessionCore", () => {
 
       await expect(archiveSessionCore(client, sessionId)).rejects.toThrow(
         "Gagal mengarsipkan sesi, coba lagi",
+      );
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("referToProfessionalCore", () => {
+  it("inserts a referral row with the calling guru as referred_by", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await referToProfessionalCore(client, { sessionId, note: "  Perlu psikolog  " });
+
+      const service = getServiceClient();
+      const { data } = await service
+        .from("professional_referrals")
+        .select("referred_by, note")
+        .eq("session_id", sessionId)
+        .single();
+      expect(data?.referred_by).toBe(id);
+      expect(data?.note).toBe("Perlu psikolog");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("stores note as null when omitted", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await referToProfessionalCore(client, { sessionId });
+
+      const service = getServiceClient();
+      const { data } = await service
+        .from("professional_referrals")
+        .select("note")
+        .eq("session_id", sessionId)
+        .single();
+      expect(data?.note).toBeNull();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects a kader via RLS", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(referToProfessionalCore(client, { sessionId })).rejects.toThrow(
+        "Gagal mencatat rujukan ke profesional",
       );
     } finally {
       for (const fn of cleanup.reverse()) await fn();

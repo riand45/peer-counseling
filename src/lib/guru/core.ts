@@ -311,7 +311,7 @@ export async function getConsultationDetailCore(
 
   const { data: session, error } = await supabase
     .from("sessions")
-    .select("id, topics, status, student_local_id, assigned_to, created_at")
+    .select("id, topics, status, student_local_id, assigned_to, created_at, archived_at")
     .eq("id", sessionId)
     .single();
 
@@ -325,6 +325,17 @@ export async function getConsultationDetailCore(
   const kaderNameById = await resolveKaderNames(supabase, assignedTo ? [assignedTo] : []);
   const identity = identityById.get(session.student_local_id as string);
 
+  const { data: referralRows } = await supabase
+    .from("professional_referrals")
+    .select("note, created_at")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const latestReferral = referralRows?.[0]
+    ? { note: referralRows[0].note as string | null, createdAt: referralRows[0].created_at as string }
+    : null;
+
   return {
     sessionId: session.id as string,
     studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
@@ -333,6 +344,8 @@ export async function getConsultationDetailCore(
     topics: (session.topics as Topic[]) ?? [],
     status: session.status as SessionStatus,
     createdAt: session.created_at as string,
+    archivedAt: (session.archived_at as string | null) ?? null,
+    latestReferral,
   };
 }
 
@@ -401,5 +414,28 @@ export async function archiveSessionCore(supabase: SupabaseClient, sessionId: st
 
   if (error || !data) {
     throw new Error("Gagal mengarsipkan sesi, coba lagi");
+  }
+}
+
+export async function referToProfessionalCore(
+  supabase: SupabaseClient,
+  input: { sessionId: string; note?: string },
+): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const note = input.note?.trim();
+  const { error } = await supabase.from("professional_referrals").insert({
+    session_id: input.sessionId,
+    referred_by: user.id,
+    note: note ? note : null,
+  });
+
+  if (error) {
+    throw new Error("Gagal mencatat rujukan ke profesional");
   }
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore, takeOverConsultationCore, archiveSessionCore } from "./core";
+import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore } from "./core";
 import { revalidatePath } from "next/cache";
 import type { SessionStatus } from "@/lib/kader/types";
 import type { ConsultationDetail, ConsultationListResult, GuruDashboard } from "./types";
@@ -45,5 +45,11 @@ export async function archiveSession(input: { sessionId: string }): Promise<void
   await archiveSessionCore(supabase, input.sessionId);
   revalidatePath("/guru");
   revalidatePath("/guru/konsultasi");
+  revalidatePath(`/guru/konsultasi/${input.sessionId}`);
+}
+
+export async function referToProfessional(input: { sessionId: string; note?: string }): Promise<void> {
+  const supabase = await createClient();
+  await referToProfessionalCore(supabase, input);
   revalidatePath(`/guru/konsultasi/${input.sessionId}`);
 }
