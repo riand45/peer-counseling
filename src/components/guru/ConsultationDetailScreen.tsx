@@ -21,12 +21,16 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 
-function StudentAvatar({ displayName }: { displayName?: string }) {
+function SenderAvatar({ displayName, tone }: { displayName?: string; tone: "student" | "kader" }) {
   const initial = displayName?.trim().charAt(0).toUpperCase() || "A";
+  const toneClasses =
+    tone === "student"
+      ? "bg-secondary-container text-on-secondary-container"
+      : "bg-tertiary-container text-on-tertiary-container";
   return (
     <div
       aria-hidden="true"
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-container text-label-sm font-bold text-on-secondary-container"
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-label-sm font-bold ${toneClasses}`}
     >
       {initial}
     </div>
@@ -206,8 +210,10 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
                 body={message.body}
                 timestamp={formatTime(message.createdAt)}
                 avatarNode={
-                  message.senderRole !== "guru" ? (
-                    <StudentAvatar displayName={detail.studentDisplayName} />
+                  message.senderRole === "student" ? (
+                    <SenderAvatar displayName={detail.studentDisplayName} tone="student" />
+                  ) : message.senderRole === "kader" ? (
+                    <SenderAvatar displayName={detail.assignedKaderName ?? "Kader"} tone="kader" />
                   ) : undefined
                 }
                 readReceipt={message.senderRole === "guru" ? "sent" : undefined}

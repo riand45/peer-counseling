@@ -16,16 +16,29 @@ const STATUS_TABS: { value: SessionStatus | "all"; label: string }[] = [
 
 export function ConsultationListScreen() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState<SessionStatus | "all">("all");
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<ConsultationListResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [search]);
+
+  useEffect(() => {
     let active = true;
-    listConsultations({ status: status === "all" ? undefined : status, search, page })
+    listConsultations({ status: status === "all" ? undefined : status, search: debouncedSearch, page })
       .then((data) => {
-        if (active) setResult(data);
+        if (active) {
+          setResult(data);
+          setError(null);
+        }
       })
       .catch((err) => {
         if (active) setError(err instanceof Error ? err.message : "Gagal memuat daftar konsultasi");
@@ -33,7 +46,7 @@ export function ConsultationListScreen() {
     return () => {
       active = false;
     };
-  }, [search, status, page]);
+  }, [debouncedSearch, status, page]);
 
   function handleStatusChange(next: SessionStatus | "all") {
     setStatus(next);

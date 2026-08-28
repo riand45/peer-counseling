@@ -352,15 +352,6 @@ export async function takeOverConsultationCore(supabase: SupabaseClient, session
     throw new Error("Sesi tidak ditemukan");
   }
 
-  const { error: updateError } = await supabase
-    .from("sessions")
-    .update({ assigned_to: user.id })
-    .eq("id", sessionId);
-
-  if (updateError) {
-    throw new Error("Gagal mengambil alih percakapan");
-  }
-
   const { error: assignmentError } = await supabase.from("session_assignments").insert({
     session_id: sessionId,
     from_id: session.assigned_to,
@@ -371,5 +362,16 @@ export async function takeOverConsultationCore(supabase: SupabaseClient, session
 
   if (assignmentError) {
     throw new Error("Gagal mencatat pengambilalihan");
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from("sessions")
+    .update({ assigned_to: user.id })
+    .eq("id", sessionId)
+    .select("id")
+    .single();
+
+  if (updateError || !updated) {
+    throw new Error("Gagal mengambil alih percakapan");
   }
 }
