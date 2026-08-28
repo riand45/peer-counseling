@@ -1,3 +1,5 @@
+import type { SessionStatus } from "@/lib/kader/types";
+
 export type Topic =
   | "pertemanan"
   | "bullying"
@@ -67,3 +69,26 @@ export function getStudentDisplayName(
   const label = avatarSeed ? AVATAR_SEED_LABELS[avatarSeed] : undefined;
   return `Anonim_${label ?? "Siswa"}`;
 }
+
+export type StudentSessionSummary = {
+  id: string;
+  topics: Topic[];
+  kaderName: string | null;
+  lastMessagePreview: string | null;
+  lastMessageAt: string | null;
+  status: SessionStatus;
+};
+
+export type ReportReason = "uncomfortable" | "unresponsive" | "need_teacher" | "other";
+
+export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
+  uncomfortable: "Saya merasa tidak nyaman",
+  unresponsive: "Kader tidak merespons",
+  need_teacher: "Saya ingin bantuan guru/BK",
+  other: "Lainnya",
+};
+
+export type StudentProfile = {
+  nickname: string | null;
+  avatarSeed: string;
+};

@@ -16,6 +16,20 @@ export type KaderDashboard = {
 
 export type SessionStatus = "waiting" | "active" | "escalated" | "ended";
 
+export const SESSION_STATUS_LABELS: Record<SessionStatus, string> = {
+  waiting: "Menunggu",
+  active: "Berlangsung",
+  escalated: "Eskalasi",
+  ended: "Selesai",
+};
+
+export const SESSION_STATUS_TONES: Record<SessionStatus, "primary" | "error" | "neutral"> = {
+  waiting: "neutral",
+  active: "primary",
+  escalated: "error",
+  ended: "neutral",
+};
+
 export type SessionStudentInfo = {
   displayName: string;
   topics: Topic[];
