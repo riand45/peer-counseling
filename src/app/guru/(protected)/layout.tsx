@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 const navItems = [
   { href: "/guru", label: "Beranda", icon: "🏠" },
   { href: "/guru/konsultasi", label: "Daftar Konsultasi", icon: "📋" },
+  { href: "/guru/statistik", label: "Statistik", icon: "📊" },
   { href: "/guru/profil", label: "Profil", icon: "🙂" },
 ];
 
