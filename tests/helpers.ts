@@ -98,6 +98,14 @@ export async function createSignedInTestKader(
   return { id: user.id, client };
 }
 
+export async function createSignedInTestGuru(
+  opts: { verified?: boolean } = {},
+): Promise<{ id: string; client: SupabaseClient }> {
+  const user = await createTestUser("guru", { verified: opts.verified ?? true });
+  const { client } = await signInTestUser(user.email, user.password);
+  return { id: user.id, client };
+}
+
 export async function createTestSession(input: {
   studentLocalId: string;
   assignedTo?: string;
