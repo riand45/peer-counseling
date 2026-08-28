@@ -104,7 +104,7 @@ export function StatisticsScreen() {
             ))}
           </select>
           <Button variant="secondary" onClick={() => stats && downloadCsv(stats, rangeDays)} disabled={!stats}>
-            ⬇ Export
+            ⬇ Ekspor
           </Button>
         </div>
       </div>
