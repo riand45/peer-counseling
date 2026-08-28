@@ -575,3 +575,43 @@ select
   coalesce((u.raw_user_meta_data ->> 'role')::public.app_role, 'kader')
 from auth.users u
 on conflict (id) do nothing;
+
+-- -------------------------------------------------------------
+-- 23. RPC: transfer_session (Kader Portal Phase 2 — Alihkan Konsultasi)
+--
+--     Postgres RLS mengevaluasi ulang USING clause suatu policy UPDATE
+--     terhadap baris HASIL update juga, bukan cuma baris lama — jadi
+--     policy "sessions: kader update sesi sendiri" (using: assigned_to
+--     = auth.uid()) menolak update manapun yang mengubah assigned_to
+--     menjadi bukan diri sendiri, walau with check-nya `true`, karena
+--     baris hasilnya tidak lagi memenuhi USING itu. Fungsi
+--     SECURITY DEFINER ini memverifikasi kepemilikan secara eksplisit
+--     lalu melakukan update dengan privilese elevated, khusus untuk
+--     baris yang sudah terbukti dimiliki pemanggil — tidak melonggarkan
+--     RLS apa pun, hanya melewati jebakan self-referential di atas.
+-- -------------------------------------------------------------
+create or replace function public.transfer_session(p_session_id uuid, p_to_kader_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_current_assigned uuid;
+begin
+  select assigned_to into v_current_assigned
+  from public.sessions
+  where id = p_session_id;
+
+  if v_current_assigned is null or v_current_assigned <> auth.uid() then
+    raise exception 'Sesi tidak ditemukan';
+  end if;
+
+  update public.sessions
+  set assigned_to = p_to_kader_id
+  where id = p_session_id;
+end;
+$$;
+
+revoke all on function public.transfer_session(uuid, uuid) from public;
+grant execute on function public.transfer_session(uuid, uuid) to authenticated;
