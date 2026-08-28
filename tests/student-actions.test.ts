@@ -8,6 +8,7 @@ import {
   getStudentSessions,
   getStudentProfile,
   updateStudentProfile,
+  deleteStudentIdentity,
 } from "@/lib/student/actions";
 import {
   getServiceClient,
@@ -368,6 +369,33 @@ describe("updateStudentProfile", () => {
       await expect(
         updateStudentProfile({ studentLocalId: localId, avatarSeed: "naga" }),
       ).rejects.toThrow("Avatar tidak dikenal");
+    } finally {
+      await deleteTestStudentIdentity(localId);
+    }
+  });
+});
+
+describe("deleteStudentIdentity", () => {
+  it("deletes the identity and cascades to delete its sessions", async () => {
+    const localId = await createTestStudentIdentity();
+    const sessionId = await createTestSession({ studentLocalId: localId });
+    try {
+      await deleteStudentIdentity({ studentLocalId: localId });
+
+      const service = getServiceClient();
+      const { data: identity } = await service
+        .from("student_identities")
+        .select("id")
+        .eq("id", localId)
+        .maybeSingle();
+      expect(identity).toBeNull();
+
+      const { data: session } = await service
+        .from("sessions")
+        .select("id")
+        .eq("id", sessionId)
+        .maybeSingle();
+      expect(session).toBeNull();
     } finally {
       await deleteTestStudentIdentity(localId);
     }

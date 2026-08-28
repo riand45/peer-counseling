@@ -282,3 +282,16 @@ export async function updateStudentProfile(input: {
     throw new Error("Gagal memperbarui profil");
   }
 }
+
+export async function deleteStudentIdentity(input: { studentLocalId: string }): Promise<void> {
+  const service = createServiceClient();
+  const { error } = await service
+    .from("student_identities")
+    .delete()
+    .eq("id", input.studentLocalId);
+
+  if (error) {
+    console.error("deleteStudentIdentity failed:", error);
+    throw new Error("Gagal menghapus akun");
+  }
+}
