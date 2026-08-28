@@ -45,3 +45,19 @@ export const SESSION_STATUS_TONES: Record<SessionStatus, "primary" | "error" | "
   escalated: "error",
   ended: "neutral",
 };
+
+export type ConsultationListItem = {
+  sessionId: string;
+  studentDisplayName: string;
+  topics: Topic[];
+  assignedKaderName: string | null;
+  status: SessionStatus;
+  createdAt: string;
+};
+
+export type ConsultationListResult = {
+  items: ConsultationListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+};

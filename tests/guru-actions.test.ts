@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getGuruDashboardCore } from "@/lib/guru/core";
+import { listConsultationsCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -117,6 +118,121 @@ describe("getGuruDashboardCore", () => {
       expect(item).toBeTruthy();
       expect(item?.kind).toBe("report");
       expect(item?.detail).toBe("Kata-kata tidak pantas terdeteksi");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("listConsultationsCore", () => {
+  it("finds a session by a unique student nickname and returns kader/topic/status", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const uniqueName = `UjiDaftar-${Date.now()}`;
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: uniqueName }).eq("id", localId);
+
+      const kader = await createSignedInTestKader({ status: "available" });
+      cleanup.push(() => deleteTestUser(kader.id));
+
+      const sessionId = await createTestSession({
+        studentLocalId: localId,
+        assignedTo: kader.id,
+        topics: ["keluarga"],
+      });
+      cleanup.push(() => deleteTestSession(sessionId));
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+
+      const result = await listConsultationsCore(client, { search: uniqueName, page: 1 });
+      expect(result.total).toBe(1);
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].sessionId).toBe(sessionId);
+      expect(result.items[0].studentDisplayName).toBe(uniqueName);
+      expect(result.items[0].topics).toEqual(["keluarga"]);
+      expect(result.items[0].status).toBe("active");
+      expect(result.items[0].assignedKaderName).toBeTruthy();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("filters by status", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const uniqueName = `UjiStatus-${Date.now()}`;
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: uniqueName }).eq("id", localId);
+
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+      await service.from("sessions").update({ status: "ended" }).eq("id", sessionId);
+
+      const activeResult = await listConsultationsCore(client, {
+        status: "active",
+        search: uniqueName,
+        page: 1,
+      });
+      expect(activeResult.items).toHaveLength(0);
+
+      const endedResult = await listConsultationsCore(client, {
+        status: "ended",
+        search: uniqueName,
+        page: 1,
+      });
+      expect(endedResult.items).toHaveLength(1);
+      expect(endedResult.items[0].sessionId).toBe(sessionId);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("paginates results with a small page size", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const uniquePrefix = `UjiHalaman-${Date.now()}`;
+      const service = getServiceClient();
+      const sessionIds: string[] = [];
+      for (let i = 0; i < 3; i += 1) {
+        const localId = await createTestStudentIdentity();
+        cleanup.push(() => deleteTestStudentIdentity(localId));
+        await service
+          .from("student_identities")
+          .update({ nickname: `${uniquePrefix}-${i}` })
+          .eq("id", localId);
+        const sessionId = await createTestSession({ studentLocalId: localId });
+        cleanup.push(() => deleteTestSession(sessionId));
+        sessionIds.push(sessionId);
+      }
+
+      const firstPage = await listConsultationsCore(client, {
+        search: uniquePrefix,
+        page: 1,
+        pageSize: 2,
+      });
+      expect(firstPage.total).toBe(3);
+      expect(firstPage.items).toHaveLength(2);
+
+      const secondPage = await listConsultationsCore(client, {
+        search: uniquePrefix,
+        page: 2,
+        pageSize: 2,
+      });
+      expect(secondPage.items).toHaveLength(1);
+
+      const allIds = [...firstPage.items, ...secondPage.items].map((item) => item.sessionId);
+      for (const sessionId of sessionIds) {
+        expect(allIds).toContain(sessionId);
+      }
     } finally {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);

@@ -3,7 +3,14 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getStudentDisplayName } from "@/lib/student/types";
 import type { Topic } from "@/lib/student/types";
 import type { SessionStatus } from "@/lib/kader/types";
-import type { ActivityItem, AttentionItem, ConsultationCounts, GuruDashboard } from "./types";
+import type {
+  ActivityItem,
+  AttentionItem,
+  ConsultationCounts,
+  ConsultationListItem,
+  ConsultationListResult,
+  GuruDashboard,
+} from "./types";
 
 const ACTIVITY_LIMIT = 10;
 const ATTENTION_LIMIT = 20;
@@ -190,4 +197,91 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
     attention,
     activity,
   };
+}
+
+const DEFAULT_PAGE_SIZE = 10;
+
+export async function listConsultationsCore(
+  supabase: SupabaseClient,
+  input: { status?: SessionStatus; search?: string; page: number; pageSize?: number },
+): Promise<ConsultationListResult> {
+  const pageSize = input.pageSize ?? DEFAULT_PAGE_SIZE;
+
+  let query = supabase
+    .from("sessions")
+    .select("id, topics, status, student_local_id, assigned_to, created_at")
+    .order("created_at", { ascending: false });
+
+  if (input.status) {
+    query = query.eq("status", input.status);
+  }
+
+  const { data: sessions, error } = await query;
+  if (error) {
+    throw new Error("Gagal memuat daftar konsultasi");
+  }
+
+  const sessionRows = sessions ?? [];
+
+  const studentLocalIds = [...new Set(sessionRows.map((row) => row.student_local_id as string))];
+  const identityById = new Map<string, { nickname: string | null; avatar_seed: string | null }>();
+  if (studentLocalIds.length > 0) {
+    const service = createServiceClient();
+    const { data: identities } = await service
+      .from("student_identities")
+      .select("id, nickname, avatar_seed")
+      .in("id", studentLocalIds);
+    for (const identity of identities ?? []) {
+      identityById.set(identity.id as string, {
+        nickname: identity.nickname as string | null,
+        avatar_seed: identity.avatar_seed as string | null,
+      });
+    }
+  }
+
+  const kaderIds = [
+    ...new Set(
+      sessionRows
+        .map((row) => row.assigned_to as string | null)
+        .filter((kaderId): kaderId is string => Boolean(kaderId)),
+    ),
+  ];
+  const kaderNameById = new Map<string, string>();
+  if (kaderIds.length > 0) {
+    const { data: kaderProfiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", kaderIds);
+    for (const row of kaderProfiles ?? []) {
+      kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Kader");
+    }
+  }
+
+  const allItems: ConsultationListItem[] = sessionRows.map((row) => {
+    const identity = identityById.get(row.student_local_id as string);
+    const assignedTo = row.assigned_to as string | null;
+    return {
+      sessionId: row.id as string,
+      studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+      topics: (row.topics as Topic[]) ?? [],
+      assignedKaderName: assignedTo ? kaderNameById.get(assignedTo) ?? null : null,
+      status: row.status as SessionStatus,
+      createdAt: row.created_at as string,
+    };
+  });
+
+  const search = input.search?.trim().toLowerCase();
+  const filtered = search
+    ? allItems.filter(
+        (item) =>
+          item.sessionId.toLowerCase().includes(search) ||
+          item.studentDisplayName.toLowerCase().includes(search),
+      )
+    : allItems;
+
+  const page = Math.max(1, input.page);
+  const start = (page - 1) * pageSize;
+  const items = filtered.slice(start, start + pageSize);
+
+  return { items, total: filtered.length, page, pageSize };
 }
