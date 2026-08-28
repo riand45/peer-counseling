@@ -1,7 +1,7 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
-import type { Topic, KaderSummary, KaderStatus } from "./types";
+import type { Topic, KaderSummary, KaderStatus, StudentSessionSummary } from "./types";
 import { AVATAR_SEED_LABELS } from "./types";
 
 function randomAvatarSeed(): string {
@@ -163,4 +163,73 @@ export async function getSessionKader(input: {
     fullName: kader.full_name ?? "Kader",
     status: kader.status as KaderStatus,
   };
+}
+
+export async function getStudentSessions(input: {
+  studentLocalId: string;
+}): Promise<StudentSessionSummary[]> {
+  const service = createServiceClient();
+
+  const { data: sessions, error } = await service
+    .from("sessions")
+    .select("id, topics, status, assigned_to, last_message_at")
+    .eq("student_local_id", input.studentLocalId)
+    .order("last_message_at", { ascending: false, nullsFirst: false });
+
+  if (error) {
+    console.error("getStudentSessions failed:", error);
+    throw new Error("Gagal memuat riwayat cerita");
+  }
+
+  const sessionRows = sessions ?? [];
+
+  const kaderIds = [
+    ...new Set(
+      sessionRows
+        .map((row) => row.assigned_to as string | null)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const kaderNameById = new Map<string, string>();
+  if (kaderIds.length > 0) {
+    const { data: kaderProfiles } = await service
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", kaderIds);
+    for (const row of kaderProfiles ?? []) {
+      kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Kader");
+    }
+  }
+
+  const sessionIds = sessionRows.map((row) => row.id as string);
+  const latestMessageBySession = new Map<string, { body: string; created_at: string }>();
+  if (sessionIds.length > 0) {
+    const { data: messages } = await service
+      .from("messages")
+      .select("session_id, body, created_at")
+      .in("session_id", sessionIds)
+      .order("created_at", { ascending: false });
+    for (const message of messages ?? []) {
+      const sid = message.session_id as string;
+      if (!latestMessageBySession.has(sid)) {
+        latestMessageBySession.set(sid, {
+          body: message.body as string,
+          created_at: message.created_at as string,
+        });
+      }
+    }
+  }
+
+  return sessionRows.map((row) => {
+    const assignedTo = row.assigned_to as string | null;
+    const latest = latestMessageBySession.get(row.id as string);
+    return {
+      id: row.id as string,
+      topics: (row.topics as Topic[]) ?? [],
+      kaderName: assignedTo ? kaderNameById.get(assignedTo) ?? null : null,
+      lastMessagePreview: latest?.body ?? null,
+      lastMessageAt: (row.last_message_at as string | null) ?? latest?.created_at ?? null,
+      status: row.status as StudentSessionSummary["status"],
+    };
+  });
 }

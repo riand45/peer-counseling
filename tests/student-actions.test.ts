@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
-import { createStudentIdentity, listAvailableKader, startSession, endSession } from "@/lib/student/actions";
+import { createStudentIdentity, listAvailableKader, startSession, endSession, getStudentSessions } from "@/lib/student/actions";
 import {
   getServiceClient,
   deleteTestStudentIdentity,
@@ -223,6 +223,57 @@ describe("endSession", () => {
       for (const fn of cleanup.reverse()) {
         await fn();
       }
+    }
+  });
+});
+
+describe("getStudentSessions", () => {
+  it("returns this student's sessions with kader name, topics, status, and latest message", async () => {
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const kader = await createTestUser("kader", { verified: true });
+      cleanup.push(() => deleteTestUser(kader.id));
+      const service = getServiceClient();
+      await service.from("profiles").update({ full_name: "Nadia" }).eq("id", kader.id);
+
+      const sessionId = await createTestSession({
+        studentLocalId: localId,
+        assignedTo: kader.id,
+        topics: ["akademik"],
+      });
+      cleanup.push(() => deleteTestSession(sessionId));
+      await service.from("sessions").update({ status: "active" }).eq("id", sessionId);
+      await service.from("messages").insert({ session_id: sessionId, sender_role: "kader", body: "Halo!" });
+
+      const result = await getStudentSessions({ studentLocalId: localId });
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(sessionId);
+      expect(result[0].kaderName).toBe("Nadia");
+      expect(result[0].topics).toEqual(["akademik"]);
+      expect(result[0].status).toBe("active");
+      expect(result[0].lastMessagePreview).toBe("Halo!");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+    }
+  });
+
+  it("excludes other students' sessions", async () => {
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const otherLocalId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(otherLocalId));
+
+      const otherSessionId = await createTestSession({ studentLocalId: otherLocalId });
+      cleanup.push(() => deleteTestSession(otherSessionId));
+
+      const result = await getStudentSessions({ studentLocalId: localId });
+      expect(result).toEqual([]);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
     }
   });
 });
