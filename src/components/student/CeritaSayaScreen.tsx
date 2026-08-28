@@ -60,22 +60,19 @@ export function CeritaSayaScreen() {
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Cari nama Kader..."
-        aria-label="Cari percakapan"
+        placeholder="Cari percakapan..."
         className="rounded-md border-2 border-transparent bg-surface-container-low px-3 py-2.5 text-body-md text-on-surface outline-none transition-colors focus:border-primary focus:bg-surface-container-lowest"
       />
 
-      {sessions.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-outline-variant py-16 text-center">
-          <p className="max-w-[24rem] text-body-md text-on-surface-variant">
+          <p className="max-w-sm text-body-md text-on-surface-variant">
             Belum ada cerita. Kalau ada sesuatu yang ingin kamu sampaikan, kamu bisa mulai kapan saja.
           </p>
           <Link href="/student/topik" className={NEW_STORY_LINK_CLASSES}>
             Mulai Cerita Baru
           </Link>
         </div>
-      ) : filtered.length === 0 ? (
-        <p className="text-body-md text-on-surface-variant">Tidak ada percakapan yang cocok dengan pencarianmu.</p>
       ) : (
         <div className="flex flex-col gap-4">
           {filtered.map((session) => (
