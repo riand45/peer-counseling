@@ -1,7 +1,7 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
-import type { Topic, KaderSummary, KaderStatus, StudentSessionSummary } from "./types";
+import type { Topic, KaderSummary, KaderStatus, StudentSessionSummary, StudentProfile } from "./types";
 import { AVATAR_SEED_LABELS } from "./types";
 
 function randomAvatarSeed(): string {
@@ -232,4 +232,53 @@ export async function getStudentSessions(input: {
       status: row.status as StudentSessionSummary["status"],
     };
   });
+}
+
+export async function getStudentProfile(input: {
+  studentLocalId: string;
+}): Promise<StudentProfile> {
+  const service = createServiceClient();
+  const { data, error } = await service
+    .from("student_identities")
+    .select("nickname, avatar_seed")
+    .eq("id", input.studentLocalId)
+    .single();
+
+  if (error || !data) {
+    throw new Error("Identitas tidak ditemukan");
+  }
+
+  return {
+    nickname: data.nickname as string | null,
+    avatarSeed: (data.avatar_seed as string | null) ?? "kucing",
+  };
+}
+
+export async function updateStudentProfile(input: {
+  studentLocalId: string;
+  nickname?: string;
+  avatarSeed?: string;
+}): Promise<void> {
+  if (input.avatarSeed && !(input.avatarSeed in AVATAR_SEED_LABELS)) {
+    throw new Error("Avatar tidak dikenal");
+  }
+
+  const update: Record<string, unknown> = {};
+  if (input.nickname !== undefined) {
+    update.nickname = input.nickname.trim() || null;
+  }
+  if (input.avatarSeed !== undefined) {
+    update.avatar_seed = input.avatarSeed;
+  }
+
+  const service = createServiceClient();
+  const { error } = await service
+    .from("student_identities")
+    .update(update)
+    .eq("id", input.studentLocalId);
+
+  if (error) {
+    console.error("updateStudentProfile failed:", error);
+    throw new Error("Gagal memperbarui profil");
+  }
 }

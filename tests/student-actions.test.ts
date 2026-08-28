@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
-import { createStudentIdentity, listAvailableKader, startSession, endSession, getStudentSessions } from "@/lib/student/actions";
+import {
+  createStudentIdentity,
+  listAvailableKader,
+  startSession,
+  endSession,
+  getStudentSessions,
+  getStudentProfile,
+  updateStudentProfile,
+} from "@/lib/student/actions";
 import {
   getServiceClient,
   deleteTestStudentIdentity,
@@ -274,6 +282,94 @@ describe("getStudentSessions", () => {
       expect(result).toEqual([]);
     } finally {
       for (const fn of cleanup.reverse()) await fn();
+    }
+  });
+});
+
+describe("getStudentProfile", () => {
+  it("returns the nickname and avatar seed for an existing identity", async () => {
+    const localId = await createTestStudentIdentity();
+    try {
+      const service = getServiceClient();
+      await service
+        .from("student_identities")
+        .update({ nickname: "Sahabat Langit", avatar_seed: "panda" })
+        .eq("id", localId);
+
+      const profile = await getStudentProfile({ studentLocalId: localId });
+      expect(profile.nickname).toBe("Sahabat Langit");
+      expect(profile.avatarSeed).toBe("panda");
+    } finally {
+      await deleteTestStudentIdentity(localId);
+    }
+  });
+
+  it("throws for an identity that does not exist", async () => {
+    await expect(getStudentProfile({ studentLocalId: randomUUID() })).rejects.toThrow(
+      "Identitas tidak ditemukan",
+    );
+  });
+});
+
+describe("updateStudentProfile", () => {
+  it("updates the nickname", async () => {
+    const localId = await createTestStudentIdentity();
+    try {
+      await updateStudentProfile({ studentLocalId: localId, nickname: "Bintang Malam" });
+      const service = getServiceClient();
+      const { data } = await service
+        .from("student_identities")
+        .select("nickname")
+        .eq("id", localId)
+        .single();
+      expect(data?.nickname).toBe("Bintang Malam");
+    } finally {
+      await deleteTestStudentIdentity(localId);
+    }
+  });
+
+  it("clears the nickname when given a whitespace-only string", async () => {
+    const localId = await createTestStudentIdentity();
+    try {
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: "Ada Nama" }).eq("id", localId);
+
+      await updateStudentProfile({ studentLocalId: localId, nickname: "  " });
+      const { data } = await service
+        .from("student_identities")
+        .select("nickname")
+        .eq("id", localId)
+        .single();
+      expect(data?.nickname).toBeNull();
+    } finally {
+      await deleteTestStudentIdentity(localId);
+    }
+  });
+
+  it("updates the avatar seed when it is a known seed", async () => {
+    const localId = await createTestStudentIdentity();
+    try {
+      await updateStudentProfile({ studentLocalId: localId, avatarSeed: "koala" });
+      const service = getServiceClient();
+      const { data } = await service
+        .from("student_identities")
+        .select("avatar_seed")
+        .eq("id", localId)
+        .single();
+      expect(data?.avatar_seed).toBe("koala");
+    } finally {
+      await deleteTestStudentIdentity(localId);
+    }
+  });
+
+  it("rejects an unknown avatar seed", async () => {
+    const localId = await createTestStudentIdentity();
+    try {
+      await expect(
+        updateStudentProfile({ studentLocalId: localId, avatarSeed: "naga" }),
+      ).rejects.toThrow("Avatar tidak dikenal");
+    } finally {
+      await deleteTestStudentIdentity(localId);
     }
   });
 });
