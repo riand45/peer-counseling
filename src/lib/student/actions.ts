@@ -259,7 +259,7 @@ export async function updateStudentProfile(input: {
   nickname?: string;
   avatarSeed?: string;
 }): Promise<void> {
-  if (input.avatarSeed && !(input.avatarSeed in AVATAR_SEED_LABELS)) {
+  if (input.avatarSeed !== undefined && !Object.hasOwn(AVATAR_SEED_LABELS, input.avatarSeed)) {
     throw new Error("Avatar tidak dikenal");
   }
 
