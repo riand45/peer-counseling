@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { ChatBubble } from "@/components/ui/ChatBubble";
+import { EscalationModal } from "@/components/kader/EscalationModal";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
 import { endKaderSession, getSessionStudentInfo } from "@/lib/kader/actions";
 import { TOPIC_LABELS } from "@/lib/student/types";
@@ -31,6 +32,8 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const [draft, setDraft] = useState("");
   const [ending, setEnding] = useState(false);
+  const [escalationOpen, setEscalationOpen] = useState(false);
+  const [escalationNotice, setEscalationNotice] = useState<string | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [studentInfo, setStudentInfo] = useState<SessionStudentInfo | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -73,6 +76,16 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
     }
   }
 
+  function handleEscalated() {
+    setEscalationOpen(false);
+    setEscalationNotice("Eskalasi terkirim ke Guru/BK.");
+    getSessionStudentInfo({ sessionId })
+      .then(setStudentInfo)
+      .catch(() => {
+        // Non-fatal: the notice above already confirms the escalation went through.
+      });
+  }
+
   return (
     <main className="flex min-h-screen flex-col bg-surface">
       <header className="flex items-center justify-between gap-2 border-b border-outline-variant bg-surface-container-lowest px-sm py-3">
@@ -99,8 +112,12 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
           >
             Alihkan
           </Button>
-          <Button variant="ghost" disabled title="Segera hadir">
-            Hubungi Guru/BK
+          <Button
+            variant="ghost"
+            onClick={() => setEscalationOpen(true)}
+            disabled={studentInfo?.status === "ended" || studentInfo?.status === "escalated"}
+          >
+            {studentInfo?.status === "escalated" ? "Sudah Dieskalasi" : "Hubungi Guru/BK"}
           </Button>
           <Button variant="ghost" onClick={handleEnd} disabled={ending}>
             {ending ? "Mengakhiri..." : "Selesaikan Sesi"}
@@ -111,6 +128,12 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
       <div className="border-b border-outline-variant bg-secondary-container px-sm py-2 text-label-sm text-on-secondary-container">
         ℹ️ Sesi ini dipantau oleh guru/BK demi keamanan.
       </div>
+
+      {escalationNotice && (
+        <div className="border-b border-outline-variant bg-secondary-container px-sm py-2 text-label-sm text-on-secondary-container">
+          ✅ {escalationNotice}
+        </div>
+      )}
 
       {error && (
         <p className="mx-sm mt-2 rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
@@ -161,6 +184,13 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
           Kirim
         </Button>
       </div>
+
+      <EscalationModal
+        sessionId={sessionId}
+        open={escalationOpen}
+        onClose={() => setEscalationOpen(false)}
+        onEscalated={handleEscalated}
+      />
     </main>
   );
 }
