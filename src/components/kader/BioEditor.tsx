@@ -44,7 +44,7 @@ export function BioEditor({ bio }: { bio: string | null }) {
           {saved || "Belum ada bio. Tambahkan bio singkat agar adik kelas lebih mengenalmu."}
         </p>
         <Button variant="ghost" className="mt-3" onClick={handleEdit}>
-          Edit Bio
+          Ubah Bio
         </Button>
       </div>
     );
