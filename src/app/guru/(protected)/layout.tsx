@@ -56,14 +56,8 @@ export default async function GuruLayout({ children }: { children: React.ReactNo
   if (!profile.is_verified) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface p-sm">
-        <div className="w-full max-w-[24rem] rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center shadow-[0_20px_45px_-20px_rgba(0,93,167,0.25)]">
-          <div
-            aria-hidden="true"
-            className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tertiary text-on-tertiary"
-          >
-            <ClockIcon />
-          </div>
-          <h1 className="mt-4 text-headline-md font-bold text-on-surface">Menunggu verifikasi</h1>
+        <div className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center">
+          <h1 className="text-headline-md font-bold text-on-surface">Menunggu verifikasi</h1>
           <p className="mt-2 text-body-md text-on-surface-variant">
             Akun Guru BK Anda belum diverifikasi. Hubungi admin sekolah atau
             pengelola aplikasi untuk verifikasi.
