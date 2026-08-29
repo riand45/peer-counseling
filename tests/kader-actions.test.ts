@@ -437,6 +437,40 @@ describe("transferSessionCore", () => {
       await deleteTestUser(unverifiedTarget.id);
     }
   });
+
+  it("rejects a non-owner at the RPC level, even with an eligible target", async () => {
+    const owner = await createSignedInTestKader({ status: "available" });
+    const nonOwner = await createSignedInTestKader({ status: "available" });
+    const eligibleTarget = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: owner.id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const result = await nonOwner.client.rpc("transfer_session", {
+        p_session_id: sessionId,
+        p_to_kader_id: eligibleTarget.id,
+      });
+      expect(result.error).toBeTruthy();
+
+      const service = getServiceClient();
+      const { data: session } = await service.from("sessions").select("assigned_to").eq("id", sessionId).single();
+      expect(session?.assigned_to).toBe(owner.id);
+
+      const { data: assignments } = await service
+        .from("session_assignments")
+        .select("id")
+        .eq("session_id", sessionId);
+      expect(assignments).toEqual([]);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(owner.id);
+      await deleteTestUser(nonOwner.id);
+      await deleteTestUser(eligibleTarget.id);
+    }
+  });
 });
 
 describe("escalateSessionCore", () => {
@@ -505,12 +539,35 @@ describe("escalateSessionCore", () => {
       cleanup.push(() => deleteTestSession(sessionId));
 
       await expect(escalateSessionCore(client, { sessionId, reason: null })).rejects.toThrow(
-        "Gagal mengirim eskalasi",
+        "Sesi tidak ditemukan",
       );
     } finally {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
       await deleteTestUser(owner.id);
+    }
+  });
+
+  it("rejects escalating a session that has already ended", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service.from("sessions").update({ status: "ended" }).eq("id", sessionId);
+
+      await expect(escalateSessionCore(client, { sessionId, reason: null })).rejects.toThrow(
+        "Sesi ini sudah selesai",
+      );
+
+      const { data: escalations } = await service.from("escalations").select("id").eq("session_id", sessionId);
+      expect(escalations).toEqual([]);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
     }
   });
 });

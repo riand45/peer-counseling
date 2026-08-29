@@ -28,6 +28,16 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
       .finally(() => setLoading(false));
   }, [sessionId]);
 
+  function handleSelect(kader: KaderSummary) {
+    setActionError(null);
+    setSelected(kader);
+  }
+
+  function handleCloseModal() {
+    setSelected(null);
+    setActionError(null);
+  }
+
   async function handleConfirm() {
     if (!selected) return;
     setTransferring(true);
@@ -61,12 +71,6 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
         </p>
       )}
 
-      {actionError && (
-        <p className="rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
-          {actionError}
-        </p>
-      )}
-
       {loading && <p className="text-body-md text-on-surface-variant">Memuat daftar kader...</p>}
 
       {!loading && !loadError && candidates.length === 0 && (
@@ -77,13 +81,13 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
 
       <div className="flex flex-col gap-3">
         {candidates.map((kader) => (
-          <TransferKaderCard key={kader.id} kader={kader} onSelect={setSelected} />
+          <TransferKaderCard key={kader.id} kader={kader} onSelect={handleSelect} />
         ))}
       </div>
 
       <Modal
         open={selected !== null}
-        onClose={() => setSelected(null)}
+        onClose={handleCloseModal}
         title="Konfirmasi Pengalihan"
         description={
           selected
@@ -92,7 +96,7 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
         }
         footer={
           <>
-            <Button variant="ghost" onClick={() => setSelected(null)} disabled={transferring}>
+            <Button variant="ghost" onClick={handleCloseModal} disabled={transferring}>
               Batal
             </Button>
             <Button onClick={handleConfirm} disabled={transferring}>
@@ -100,7 +104,13 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
             </Button>
           </>
         }
-      />
+      >
+        {actionError && (
+          <p className="rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
+            {actionError}
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }

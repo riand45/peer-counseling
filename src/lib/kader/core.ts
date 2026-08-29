@@ -247,7 +247,7 @@ export async function transferSessionCore(
 
   const { data: session, error: sessionError } = await supabase
     .from("sessions")
-    .select("assigned_to")
+    .select("id")
     .eq("id", input.sessionId)
     .single();
 
@@ -272,18 +272,6 @@ export async function transferSessionCore(
     throw new Error("Kader ini sudah tidak tersedia, silakan pilih kader lain");
   }
 
-  const { error: assignmentError } = await supabase.from("session_assignments").insert({
-    session_id: input.sessionId,
-    from_id: session.assigned_to,
-    to_id: input.toKaderId,
-    changed_by: user.id,
-    reason: "transfer",
-  });
-
-  if (assignmentError) {
-    throw new Error("Gagal mencatat pengalihan");
-  }
-
   const { error: rpcError } = await supabase.rpc("transfer_session", {
     p_session_id: input.sessionId,
     p_to_kader_id: input.toKaderId,
@@ -303,6 +291,19 @@ export async function escalateSessionCore(
   } = await supabase.auth.getUser();
   if (!user) {
     throw new Error("Anda harus login");
+  }
+
+  const { data: session, error: sessionError } = await supabase
+    .from("sessions")
+    .select("status")
+    .eq("id", input.sessionId)
+    .single();
+
+  if (sessionError || !session) {
+    throw new Error("Sesi tidak ditemukan");
+  }
+  if (session.status === "ended") {
+    throw new Error("Sesi ini sudah selesai, tidak bisa dieskalasi");
   }
 
   const { error } = await supabase.from("escalations").insert({

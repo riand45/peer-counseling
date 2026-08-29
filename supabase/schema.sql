@@ -579,24 +579,53 @@ on conflict (id) do nothing;
 -- -------------------------------------------------------------
 -- 23. RPC: transfer_session (Kader Portal Phase 2 — Alihkan Konsultasi)
 --
---     Postgres RLS mengevaluasi ulang USING clause suatu policy UPDATE
---     terhadap baris HASIL update juga, bukan cuma baris lama — jadi
---     policy "sessions: kader update sesi sendiri" (using: assigned_to
---     = auth.uid()) menolak update manapun yang mengubah assigned_to
---     menjadi bukan diri sendiri, walau with check-nya `true`, karena
---     baris hasilnya tidak lagi memenuhi USING itu. Fungsi
---     SECURITY DEFINER ini memverifikasi kepemilikan DAN kelayakan
---     kader tujuan secara eksplisit lalu melakukan update dengan
---     privilese elevated — tidak melonggarkan RLS apa pun, hanya
---     melewati jebakan self-referential di atas.
+--     Empirically confirmed (isolated probe tests against the live
+--     project, kept out of the committed suite): a kader's plain
+--     `update sessions set assigned_to = <someone else>` — even with
+--     no `.select()`/RETURNING attached, so it isn't the well-known
+--     "RETURNING re-checks the SELECT policy" case — is rejected with
+--     42501 "new row violates row-level security policy for table
+--     sessions" by "sessions: kader update sesi sendiri" (using:
+--     assigned_to = auth.uid()), despite that policy's own with_check
+--     reading a plain `true` (verified directly via `pg_policies`). A
+--     guru performing the identical reassignment via "sessions: guru
+--     update semua" (using/with_check: is_guru(), which doesn't
+--     depend on assigned_to at all) succeeds every time. So the
+--     failure tracks a policy whose USING clause is keyed on the very
+--     column being changed, not `with_check`'s literal text — the
+--     precise Postgres-internal mechanism wasn't chased further than
+--     that; treat "this specific shape errors" as the confirmed fact,
+--     not the general rule "USING always applies to the new row".
 --
---     Fungsi ini di-grant EXECUTE ke `authenticated` (dipanggil langsung
---     lewat .rpc() dari client), bukan cuma dari transferSessionCore —
---     jadi pengecekan kepemilikan DAN kelayakan kader tujuan di sini
---     adalah gerbang otorisasi utama untuk endpoint ini, bukan sekadar
---     defense-in-depth di belakang pengecekan yang sama di TypeScript.
---     Kombinasi cek kepemilikan + update jadi satu statement (bukan
---     select-lalu-update terpisah) supaya atomik.
+--     Given a WITH CHECK expression has no access to the pre-update
+--     row (no OLD.* here), no with_check text can special-case "the
+--     caller was the previous owner" for a USING clause shaped like
+--     this. This SECURITY DEFINER function moves the reassignment
+--     into an imperative check the trap can't reach: it re-verifies
+--     ownership AND destination eligibility explicitly, then writes
+--     with elevated privilege — RLS is bypassed only for this one
+--     write, and only after both checks pass. Not a general workaround
+--     for "USING clauses on the column being updated" — this table's
+--     specific policy shape, confirmed to actually fail, is what
+--     justifies the elevated-privilege write here.
+--
+--     Grant EXECUTE goes to `authenticated` (callable directly via
+--     .rpc() from any signed-in client, not only from
+--     transferSessionCore) — so every check in this function is the
+--     primary authorization gate for that direct path, not
+--     defense-in-depth behind the mirrored checks in TypeScript.
+--     Ordering matters for that reason: the ownership-gated UPDATE
+--     runs first (folded into one atomic statement, no separate
+--     select-then-update), and destination-eligibility is checked
+--     only after it succeeds — a caller who doesn't own p_session_id
+--     always gets 'Sesi tidak ditemukan' and learns nothing about
+--     whether p_to_kader_id is a real, available kader. If the
+--     eligibility check then fails, raising rolls back the earlier
+--     UPDATE (still inside the same function invocation/transaction),
+--     so no partial reassignment survives. The session_assignments
+--     audit insert lives here too, after both checks, so a rejected
+--     transfer can never leave a stray "transfer happened" audit row —
+--     insert-then-call-this-function would have exactly that gap.
 -- -------------------------------------------------------------
 create or replace function public.transfer_session(p_session_id uuid, p_to_kader_id uuid)
 returns void
@@ -605,6 +634,16 @@ security definer
 set search_path = ''
 as $$
 begin
+  update public.sessions
+  set assigned_to = p_to_kader_id
+  where id = p_session_id
+    and assigned_to = auth.uid()
+    and status <> 'ended';
+
+  if not found then
+    raise exception 'Sesi tidak ditemukan';
+  end if;
+
   if not exists (
     select 1 from public.profiles
     where id = p_to_kader_id
@@ -615,14 +654,8 @@ begin
     raise exception 'Kader tidak ditemukan';
   end if;
 
-  update public.sessions
-  set assigned_to = p_to_kader_id
-  where id = p_session_id
-    and assigned_to = auth.uid();
-
-  if not found then
-    raise exception 'Sesi tidak ditemukan';
-  end if;
+  insert into public.session_assignments (session_id, from_id, to_id, changed_by, reason)
+  values (p_session_id, auth.uid(), p_to_kader_id, auth.uid(), 'transfer');
 end;
 $$;
 
