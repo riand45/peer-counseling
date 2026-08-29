@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { getGuruDashboardCore } from "@/lib/guru/core";
 import { listConsultationsCore } from "@/lib/guru/core";
 import { getConsultationDetailCore } from "@/lib/guru/core";
-import { endConsultationAsGuruCore, takeOverConsultationCore } from "@/lib/guru/core";
+import { endConsultationAsGuruCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore } from "@/lib/guru/core";
+import { getGuruStatisticsCore } from "@/lib/guru/core";
 import {
   getServiceClient,
   createSignedInTestGuru,
@@ -123,6 +124,28 @@ describe("getGuruDashboardCore", () => {
       expect(item).toBeTruthy();
       expect(item?.kind).toBe("report");
       expect(item?.detail).toBe("Kata-kata tidak pantas terdeteksi");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("excludes an archived session from Aktivitas Terbaru", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service
+        .from("sessions")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", sessionId);
+
+      const result = await getGuruDashboardCore(client);
+      expect(result.activity.find((item) => item.sessionId === sessionId)).toBeUndefined();
     } finally {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
@@ -266,6 +289,39 @@ describe("listConsultationsCore", () => {
       await deleteTestUser(other.id);
     }
   });
+
+  it("excludes archived sessions by default and includes them with includeArchived", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const uniqueName = `UjiArsip-${Date.now()}`;
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: uniqueName }).eq("id", localId);
+
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+      await service
+        .from("sessions")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", sessionId);
+
+      const defaultResult = await listConsultationsCore(client, { search: uniqueName, page: 1 });
+      expect(defaultResult.items).toHaveLength(0);
+
+      const withArchived = await listConsultationsCore(client, {
+        search: uniqueName,
+        page: 1,
+        includeArchived: true,
+      });
+      expect(withArchived.items).toHaveLength(1);
+      expect(withArchived.items[0].archived).toBe(true);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
 });
 
 describe("getConsultationDetailCore", () => {
@@ -362,6 +418,52 @@ describe("getConsultationDetailCore", () => {
       for (const fn of cleanup.reverse()) await fn();
       await deleteTestUser(id);
       await deleteTestUser(owner.id);
+    }
+  });
+
+  it("returns archivedAt null and latestReferral null for a fresh session", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      const detail = await getConsultationDetailCore(client, sessionId);
+      expect(detail.archivedAt).toBeNull();
+      expect(detail.latestReferral).toBeNull();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("returns the archived timestamp and the most recent referral", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+      const service = getServiceClient();
+      await service
+        .from("sessions")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", sessionId);
+      await service.from("professional_referrals").insert({
+        session_id: sessionId,
+        referred_by: id,
+        note: "Butuh pendampingan lanjutan",
+      });
+
+      const detail = await getConsultationDetailCore(client, sessionId);
+      expect(detail.archivedAt).toBeTruthy();
+      expect(detail.latestReferral?.note).toBe("Butuh pendampingan lanjutan");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
     }
   });
 });
@@ -475,6 +577,196 @@ describe("takeOverConsultationCore", () => {
       await expect(takeOverConsultationCore(client, sessionId)).rejects.toThrow("Sesi tidak ditemukan");
     } finally {
       for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("archiveSessionCore", () => {
+  it("sets archived_at and hides the session from listConsultationsCore by default", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const uniqueName = `UjiHapusLog-${Date.now()}`;
+      const service = getServiceClient();
+      await service.from("student_identities").update({ nickname: uniqueName }).eq("id", localId);
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await archiveSessionCore(client, sessionId);
+
+      const { data } = await service.from("sessions").select("archived_at").eq("id", sessionId).single();
+      expect(data?.archived_at).toBeTruthy();
+
+      const listed = await listConsultationsCore(client, { search: uniqueName, page: 1 });
+      expect(listed.items).toHaveLength(0);
+      const listedWithArchived = await listConsultationsCore(client, {
+        search: uniqueName,
+        page: 1,
+        includeArchived: true,
+      });
+      expect(listedWithArchived.items[0].archived).toBe(true);
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects an unverified guru via RLS", async () => {
+    const { id, client } = await createSignedInTestGuru({ verified: false });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(archiveSessionCore(client, sessionId)).rejects.toThrow(
+        "Gagal mengarsipkan sesi, coba lagi",
+      );
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("referToProfessionalCore", () => {
+  it("inserts a referral row with the calling guru as referred_by", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await referToProfessionalCore(client, { sessionId, note: "  Perlu psikolog  " });
+
+      const service = getServiceClient();
+      const { data } = await service
+        .from("professional_referrals")
+        .select("referred_by, note")
+        .eq("session_id", sessionId)
+        .single();
+      expect(data?.referred_by).toBe(id);
+      expect(data?.note).toBe("Perlu psikolog");
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("stores note as null when omitted", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await referToProfessionalCore(client, { sessionId });
+
+      const service = getServiceClient();
+      const { data } = await service
+        .from("professional_referrals")
+        .select("note")
+        .eq("session_id", sessionId)
+        .single();
+      expect(data?.note).toBeNull();
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+
+  it("rejects a kader via RLS", async () => {
+    const { id, client } = await createSignedInTestKader({ status: "available" });
+    const cleanup: Array<() => Promise<void>> = [];
+    try {
+      const localId = await createTestStudentIdentity();
+      cleanup.push(() => deleteTestStudentIdentity(localId));
+      const sessionId = await createTestSession({ studentLocalId: localId, assignedTo: id });
+      cleanup.push(() => deleteTestSession(sessionId));
+
+      await expect(referToProfessionalCore(client, { sessionId })).rejects.toThrow(
+        "Gagal mencatat rujukan ke profesional",
+      );
+    } finally {
+      for (const fn of cleanup.reverse()) await fn();
+      await deleteTestUser(id);
+    }
+  });
+});
+
+describe("getGuruStatisticsCore", () => {
+  it("returns an all-zero, well-formed shape for an unverified guru (RLS-filtered to zero rows)", async () => {
+    const { id, client } = await createSignedInTestGuru({ verified: false });
+    try {
+      const result = await getGuruStatisticsCore(client, 30);
+      expect(result.totalSessions).toBe(0);
+      expect(result.activeStudents).toBe(0);
+      expect(result.avgDurationMinutes).toBeNull();
+      expect(result.escalationCount).toBe(0);
+      expect(result.trend.every((point) => point.count === 0)).toBe(true);
+      expect(result.statusDistribution.every((entry) => entry.count === 0)).toBe(true);
+      expect(result.topicDistribution.every((entry) => entry.count === 0)).toBe(true);
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("returns a trend array spanning exactly rangeDays days ending today (UTC), in order", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      const result = await getGuruStatisticsCore(client, 7);
+      expect(result.trend).toHaveLength(7);
+      const today = new Date().toISOString().slice(0, 10);
+      expect(result.trend[result.trend.length - 1].date).toBe(today);
+      const dates = result.trend.map((point) => point.date);
+      expect(dates).toEqual([...dates].sort());
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("covers all 4 statuses in order and sums to totalSessions", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      const result = await getGuruStatisticsCore(client, 30);
+      expect(result.statusDistribution.map((entry) => entry.status)).toEqual([
+        "waiting",
+        "active",
+        "escalated",
+        "ended",
+      ]);
+      const sum = result.statusDistribution.reduce((total, entry) => total + entry.count, 0);
+      expect(sum).toBe(result.totalSessions);
+    } finally {
+      await deleteTestUser(id);
+    }
+  });
+
+  it("covers all 7 topics in order, and the trend sums to totalSessions", async () => {
+    const { id, client } = await createSignedInTestGuru();
+    try {
+      const result = await getGuruStatisticsCore(client, 30);
+      expect(result.topicDistribution.map((entry) => entry.topic)).toEqual([
+        "pertemanan",
+        "bullying",
+        "keluarga",
+        "akademik",
+        "perasaan",
+        "lingkungan_sekolah",
+        "lainnya",
+      ]);
+      const trendSum = result.trend.reduce((total, point) => total + point.count, 0);
+      expect(trendSum).toBe(result.totalSessions);
+      expect(result.activeStudents).toBeLessThanOrEqual(result.totalSessions);
+    } finally {
       await deleteTestUser(id);
     }
   });

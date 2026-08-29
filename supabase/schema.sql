@@ -628,3 +628,80 @@ $$;
 
 revoke all on function public.transfer_session(uuid, uuid) from public;
 grant execute on function public.transfer_session(uuid, uuid) to authenticated;
+
+-- -------------------------------------------------------------
+-- 24. sessions.archived_at (Guru Phase 2: "Hapus Log" — arsip, bukan hapus)
+-- -------------------------------------------------------------
+alter table public.sessions add column if not exists archived_at timestamptz;
+
+-- -------------------------------------------------------------
+-- 25. Tabel professional_referrals (Guru Phase 2: "Alihkan ke Profesional")
+-- -------------------------------------------------------------
+create table if not exists public.professional_referrals (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references public.sessions (id) on delete cascade,
+  referred_by uuid not null references public.profiles (id) on delete cascade,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.professional_referrals enable row level security;
+
+-- -------------------------------------------------------------
+-- 26. GRANTS — professional_referrals
+-- -------------------------------------------------------------
+revoke all on public.professional_referrals from anon, authenticated;
+grant select, insert on public.professional_referrals to authenticated;
+
+-- -------------------------------------------------------------
+-- 27. RLS POLICIES — professional_referrals (guru-only, append-only)
+-- -------------------------------------------------------------
+drop policy if exists "professional_referrals: guru baca" on public.professional_referrals;
+create policy "professional_referrals: guru baca"
+  on public.professional_referrals for select
+  to authenticated
+  using (public.is_guru());
+
+drop policy if exists "professional_referrals: guru buat" on public.professional_referrals;
+create policy "professional_referrals: guru buat"
+  on public.professional_referrals for insert
+  to authenticated
+  with check (public.is_guru() and referred_by = auth.uid());
+
+-- -------------------------------------------------------------
+-- 28. Trigger: lindungi kolom archived_at di sessions
+--
+--     Policy "sessions: kader update sesi sendiri" mengizinkan kader
+--     meng-update BARIS sesi yang ditugaskan padanya dengan
+--     `with check (true)` — RLS tidak bisa membatasi KOLOM mana yang
+--     boleh diubah, jadi tanpa trigger ini kader bisa PATCH archived_at
+--     di sesinya sendiri dan menyembunyikannya dari semua tampilan guru
+--     (Beranda, Daftar Konsultasi, Statistik) sambil sesi tetap
+--     berjalan normal — kebalikan dari maksud "Hapus Log" (aksi guru).
+--
+--     Sama seperti protect_profile_privileged_columns: trigger before
+--     update yang mengembalikan archived_at ke nilai lama kalau pelaku
+--     update bukan is_guru(), dengan syarat auth.uid() is not null agar
+--     service_role dan SQL langsung (Dashboard SQL Editor) tetap bisa
+--     menulis kolom ini.
+-- -------------------------------------------------------------
+create or replace function public.protect_sessions_archived_at()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.archived_at is distinct from old.archived_at
+     and auth.uid() is not null
+     and not public.is_guru() then
+    new.archived_at := old.archived_at;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_session_archived_at_update on public.sessions;
+create trigger on_session_archived_at_update
+  before update on public.sessions
+  for each row execute procedure public.protect_sessions_archived_at();

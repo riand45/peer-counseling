@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -9,8 +10,10 @@ import { ChatBubble } from "@/components/ui/ChatBubble";
 import { Modal } from "@/components/ui/Modal";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
 import {
+  archiveSession,
   endConsultationAsGuru,
   getConsultationDetail,
+  referToProfessional,
   takeOverConsultation,
 } from "@/lib/guru/actions";
 import { SESSION_STATUS_LABELS, SESSION_STATUS_TONES } from "@/lib/guru/types";
@@ -19,6 +22,16 @@ import type { ConsultationDetail } from "@/lib/guru/types";
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatRelativeTime(iso: string): string {
+  const diffMinutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (diffMinutes < 1) return "Baru saja";
+  if (diffMinutes < 60) return `${diffMinutes} mnt lalu`;
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  const diffDays = Math.round(diffHours / 24);
+  return `${diffDays} hari lalu`;
 }
 
 function SenderAvatar({ displayName, tone }: { displayName?: string; tone: "student" | "kader" }) {
@@ -38,12 +51,18 @@ function SenderAvatar({ displayName, tone }: { displayName?: string; tone: "stud
 }
 
 export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
+  const router = useRouter();
   const [detail, setDetail] = useState<ConsultationDetail | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmingTakeOver, setConfirmingTakeOver] = useState(false);
   const [takingOver, setTakingOver] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [confirmingReferral, setConfirmingReferral] = useState(false);
+  const [referralNote, setReferralNote] = useState("");
+  const [referring, setReferring] = useState(false);
+  const [confirmingArchive, setConfirmingArchive] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -94,6 +113,33 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
       setActionError(err instanceof Error ? err.message : "Gagal menandai sesi selesai");
     } finally {
       setEnding(false);
+    }
+  }
+
+  async function handleConfirmReferral() {
+    setReferring(true);
+    setActionError(null);
+    try {
+      await referToProfessional({ sessionId, note: referralNote.trim() || undefined });
+      setConfirmingReferral(false);
+      setReferralNote("");
+      await loadDetail();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Gagal mencatat rujukan ke profesional");
+    } finally {
+      setReferring(false);
+    }
+  }
+
+  async function handleConfirmArchive() {
+    setArchiving(true);
+    setActionError(null);
+    try {
+      await archiveSession({ sessionId });
+      router.push("/guru/konsultasi");
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Gagal mengarsipkan sesi");
+      setArchiving(false);
     }
   }
 
@@ -166,24 +212,48 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
             </div>
             <div>
               <p className="text-label-sm uppercase text-on-surface-variant">Status</p>
-              <Chip tone={SESSION_STATUS_TONES[detail.status]} className="mt-1">
-                {SESSION_STATUS_LABELS[detail.status]}
-              </Chip>
+              <div className="mt-1 flex flex-wrap gap-2">
+                <Chip tone={SESSION_STATUS_TONES[detail.status]}>{SESSION_STATUS_LABELS[detail.status]}</Chip>
+                {detail.archivedAt && <Chip tone="neutral">Diarsipkan</Chip>}
+              </div>
             </div>
           </Card>
 
           <Card className="flex flex-col gap-3">
             <h2 className="text-headline-md text-on-surface">Tindakan Guru/BK</h2>
-            {!detail.hasTakenOver && detail.status !== "ended" && (
+            {!detail.hasTakenOver && detail.status !== "ended" && !detail.archivedAt && (
               <Button onClick={() => setConfirmingTakeOver(true)}>✋ Ambil Alih Percakapan</Button>
             )}
-            <Button variant="secondary" disabled title="Segera hadir">
-              ⇄ Alihkan ke Profesional
-            </Button>
-            <Button variant="ghost" onClick={handleEnd} disabled={ending || detail.status === "ended"}>
+            {detail.latestReferral ? (
+              <div className="flex flex-col gap-2">
+                <Button variant="secondary" disabled>
+                  ⇄ Alihkan ke Profesional
+                </Button>
+                <Chip tone="secondary">
+                  Dirujuk ke Profesional · {formatRelativeTime(detail.latestReferral.createdAt)}
+                </Chip>
+              </div>
+            ) : (
+              <Button
+                variant="secondary"
+                onClick={() => setConfirmingReferral(true)}
+                disabled={Boolean(detail.archivedAt)}
+              >
+                ⇄ Alihkan ke Profesional
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              onClick={handleEnd}
+              disabled={ending || detail.status === "ended" || Boolean(detail.archivedAt)}
+            >
               {ending ? "Menandai..." : "✓ Tandai Selesai"}
             </Button>
-            <Button variant="ghost" disabled title="Segera hadir">
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmingArchive(true)}
+              disabled={Boolean(detail.archivedAt) || detail.status !== "ended"}
+            >
               🗑 Hapus Log
             </Button>
           </Card>
@@ -222,7 +292,7 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
             <div ref={bottomRef} />
           </div>
 
-          {detail.hasTakenOver && (
+          {detail.hasTakenOver && !detail.archivedAt && (
             <div className="flex items-center gap-2 border-t border-outline-variant pt-3">
               <textarea
                 value={draft}
@@ -257,6 +327,48 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
             </Button>
             <Button onClick={handleConfirmTakeOver} disabled={takingOver}>
               {takingOver ? "Mengambil alih..." : "Ambil Alih"}
+            </Button>
+          </>
+        }
+      />
+
+      <Modal
+        open={confirmingReferral}
+        onClose={() => setConfirmingReferral(false)}
+        title="Alihkan ke profesional?"
+        description="Tandai sesi ini sebagai butuh penanganan profesional. Ini hanya mencatat penilaian Anda — tidak ada notifikasi atau pihak lain yang otomatis terlibat."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirmingReferral(false)} disabled={referring}>
+              Batal
+            </Button>
+            <Button onClick={handleConfirmReferral} disabled={referring}>
+              {referring ? "Menyimpan..." : "Alihkan"}
+            </Button>
+          </>
+        }
+      >
+        <textarea
+          value={referralNote}
+          onChange={(e) => setReferralNote(e.target.value)}
+          placeholder="Catatan (opsional)"
+          rows={3}
+          className="w-full resize-none rounded-md border-2 border-transparent bg-surface-container-low px-3 py-2.5 text-body-md text-on-surface outline-none transition-colors focus:border-primary focus:bg-surface-container-lowest"
+        />
+      </Modal>
+
+      <Modal
+        open={confirmingArchive}
+        onClose={() => setConfirmingArchive(false)}
+        title="Hapus log konsultasi?"
+        description="Sesi ini akan disembunyikan dari daftar aktif. Semua data (pesan, riwayat) tetap tersimpan dan tidak dihapus."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirmingArchive(false)} disabled={archiving}>
+              Batal
+            </Button>
+            <Button onClick={handleConfirmArchive} disabled={archiving}>
+              {archiving ? "Menghapus..." : "Hapus Log"}
             </Button>
           </>
         }

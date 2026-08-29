@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getStudentDisplayName } from "@/lib/student/types";
+import { getStudentDisplayName, TOPICS } from "@/lib/student/types";
 import type { Topic } from "@/lib/student/types";
 import type { SessionStatus } from "@/lib/kader/types";
 import type {
@@ -11,10 +11,16 @@ import type {
   ConsultationListItem,
   ConsultationListResult,
   GuruDashboard,
+  GuruStatistics,
+  StatisticsRangeDays,
+  StatisticsTrendPoint,
+  StatusDistributionEntry,
+  TopicDistributionEntry,
 } from "./types";
 
 const ACTIVITY_LIMIT = 10;
 const ATTENTION_LIMIT = 20;
+const SESSION_STATUS_ORDER: SessionStatus[] = ["waiting", "active", "escalated", "ended"];
 
 async function resolveStudentDisplayNames(
   supabase: SupabaseClient,
@@ -74,7 +80,10 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
     throw new Error("Gagal memuat profil");
   }
 
-  const { data: statusRows, error: statusError } = await supabase.from("sessions").select("status");
+  const { data: statusRows, error: statusError } = await supabase
+    .from("sessions")
+    .select("status")
+    .is("archived_at", null);
 
   if (statusError) {
     throw new Error("Gagal memuat ringkasan konsultasi");
@@ -126,7 +135,8 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
 
   const { data: activityRows, error: activityError } = await supabase
     .from("sessions")
-    .select("id, topics, status, student_local_id, assigned_to, last_message_at, created_at");
+    .select("id, topics, status, student_local_id, assigned_to, last_message_at, created_at")
+    .is("archived_at", null);
 
   if (activityError) {
     throw new Error("Gagal memuat aktivitas terbaru");
@@ -222,17 +232,27 @@ const DEFAULT_PAGE_SIZE = 10;
 
 export async function listConsultationsCore(
   supabase: SupabaseClient,
-  input: { status?: SessionStatus; search?: string; page: number; pageSize?: number },
+  input: {
+    status?: SessionStatus;
+    search?: string;
+    page: number;
+    pageSize?: number;
+    includeArchived?: boolean;
+  },
 ): Promise<ConsultationListResult> {
   const pageSize = input.pageSize ?? DEFAULT_PAGE_SIZE;
 
   let query = supabase
     .from("sessions")
-    .select("id, topics, status, student_local_id, assigned_to, created_at")
+    .select("id, topics, status, student_local_id, assigned_to, created_at, archived_at")
     .order("created_at", { ascending: false });
 
   if (input.status) {
     query = query.eq("status", input.status);
+  }
+
+  if (!input.includeArchived) {
+    query = query.is("archived_at", null);
   }
 
   const { data: sessions, error } = await query;
@@ -264,6 +284,7 @@ export async function listConsultationsCore(
       assignedKaderName: assignedTo ? kaderNameById.get(assignedTo) ?? null : null,
       status: row.status as SessionStatus,
       createdAt: row.created_at as string,
+      archived: Boolean(row.archived_at),
     };
   });
 
@@ -296,7 +317,7 @@ export async function getConsultationDetailCore(
 
   const { data: session, error } = await supabase
     .from("sessions")
-    .select("id, topics, status, student_local_id, assigned_to, created_at")
+    .select("id, topics, status, student_local_id, assigned_to, created_at, archived_at")
     .eq("id", sessionId)
     .single();
 
@@ -310,6 +331,17 @@ export async function getConsultationDetailCore(
   const kaderNameById = await resolveKaderNames(supabase, assignedTo ? [assignedTo] : []);
   const identity = identityById.get(session.student_local_id as string);
 
+  const { data: referralRows } = await supabase
+    .from("professional_referrals")
+    .select("note, created_at")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const latestReferral = referralRows?.[0]
+    ? { note: referralRows[0].note as string | null, createdAt: referralRows[0].created_at as string }
+    : null;
+
   return {
     sessionId: session.id as string,
     studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
@@ -318,6 +350,8 @@ export async function getConsultationDetailCore(
     topics: (session.topics as Topic[]) ?? [],
     status: session.status as SessionStatus,
     createdAt: session.created_at as string,
+    archivedAt: (session.archived_at as string | null) ?? null,
+    latestReferral,
   };
 }
 
@@ -374,4 +408,123 @@ export async function takeOverConsultationCore(supabase: SupabaseClient, session
   if (updateError || !updated) {
     throw new Error("Gagal mengambil alih percakapan");
   }
+}
+
+export async function archiveSessionCore(supabase: SupabaseClient, sessionId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("sessions")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", sessionId)
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    throw new Error("Gagal mengarsipkan sesi, coba lagi");
+  }
+}
+
+export async function referToProfessionalCore(
+  supabase: SupabaseClient,
+  input: { sessionId: string; note?: string },
+): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  const note = input.note?.trim();
+  const { error } = await supabase.from("professional_referrals").insert({
+    session_id: input.sessionId,
+    referred_by: user.id,
+    note: note ? note : null,
+  });
+
+  if (error) {
+    throw new Error("Gagal mencatat rujukan ke profesional");
+  }
+}
+
+export async function getGuruStatisticsCore(
+  supabase: SupabaseClient,
+  rangeDays: StatisticsRangeDays,
+): Promise<GuruStatistics> {
+  const now = new Date();
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const sinceUtc = todayUtc - (rangeDays - 1) * 24 * 60 * 60 * 1000;
+  const since = new Date(sinceUtc).toISOString();
+
+  const [{ data: sessionRows, error: sessionsError }, { data: escalationRows, error: escalationsError }] =
+    await Promise.all([
+      supabase
+        .from("sessions")
+        .select("id, topics, status, student_local_id, started_at, ended_at, created_at")
+        .gte("created_at", since)
+        .is("archived_at", null),
+      supabase.from("escalations").select("id").eq("status", "pending").gte("created_at", since),
+    ]);
+
+  if (sessionsError || escalationsError) {
+    throw new Error("Gagal memuat statistik konsultasi");
+  }
+
+  const sessions = sessionRows ?? [];
+  const totalSessions = sessions.length;
+  const activeStudents = new Set(sessions.map((row) => row.student_local_id as string)).size;
+
+  const durations = sessions
+    .map((row) => {
+      const startedAt = row.started_at as string | null;
+      const endedAt = row.ended_at as string | null;
+      if (!startedAt || !endedAt) return null;
+      return (new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000;
+    })
+    .filter((minutes): minutes is number => minutes !== null);
+  const avgDurationMinutes =
+    durations.length > 0 ? durations.reduce((sum, minutes) => sum + minutes, 0) / durations.length : null;
+
+  const escalationCount = (escalationRows ?? []).length;
+
+  const trendByDate = new Map<string, number>();
+  for (let i = 0; i < rangeDays; i += 1) {
+    const date = new Date(sinceUtc + i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    trendByDate.set(date, 0);
+  }
+  for (const row of sessions) {
+    const date = (row.created_at as string).slice(0, 10);
+    trendByDate.set(date, (trendByDate.get(date) ?? 0) + 1);
+  }
+  const trend: StatisticsTrendPoint[] = [...trendByDate.entries()].map(([date, count]) => ({ date, count }));
+
+  const statusCounts = new Map<SessionStatus, number>(SESSION_STATUS_ORDER.map((status) => [status, 0]));
+  for (const row of sessions) {
+    const status = row.status as SessionStatus;
+    statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
+  }
+  const statusDistribution: StatusDistributionEntry[] = SESSION_STATUS_ORDER.map((status) => ({
+    status,
+    count: statusCounts.get(status) ?? 0,
+  }));
+
+  const topicCounts = new Map<Topic, number>(TOPICS.map((topic) => [topic, 0]));
+  for (const row of sessions) {
+    for (const topic of (row.topics as Topic[]) ?? []) {
+      topicCounts.set(topic, (topicCounts.get(topic) ?? 0) + 1);
+    }
+  }
+  const topicDistribution: TopicDistributionEntry[] = TOPICS.map((topic) => ({
+    topic,
+    count: topicCounts.get(topic) ?? 0,
+  }));
+
+  return {
+    totalSessions,
+    activeStudents,
+    avgDurationMinutes,
+    escalationCount,
+    trend,
+    statusDistribution,
+    topicDistribution,
+  };
 }
