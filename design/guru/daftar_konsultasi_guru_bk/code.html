@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manajemen Konsultasi - Ruang Cerita</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#414751",
+                    "primary-container": "#2976c7",
+                    "on-background": "#191c1d",
+                    "secondary-container": "#6cbdfe",
+                    "surface": "#f8f9fa",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#004b75",
+                    "secondary": "#006398",
+                    "on-primary-fixed": "#001c39",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f3f4f5",
+                    "on-tertiary-container": "#fafdff",
+                    "surface-bright": "#f8f9fa",
+                    "surface-dim": "#d9dadb",
+                    "surface-container-high": "#e7e8e9",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#a4c9ff",
+                    "primary-fixed": "#d4e3ff",
+                    "on-primary-fixed-variant": "#004883",
+                    "on-secondary-fixed": "#001d32",
+                    "on-primary": "#ffffff",
+                    "outline": "#717783",
+                    "on-tertiary-fixed": "#0b1e24",
+                    "secondary-fixed": "#cde5ff",
+                    "outline-variant": "#c1c7d3",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#fdfcff",
+                    "surface-variant": "#e1e3e4",
+                    "error": "#ba1a1a",
+                    "surface-container": "#edeeef",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-tint": "#0060ac",
+                    "primary": "#005da7",
+                    "tertiary-fixed-dim": "#b6cad2",
+                    "secondary-fixed-dim": "#94ccff",
+                    "tertiary-container": "#65777f",
+                    "on-surface": "#191c1d",
+                    "background": "#f8f9fa",
+                    "inverse-surface": "#2e3132",
+                    "inverse-primary": "#a4c9ff",
+                    "on-secondary-fixed-variant": "#004b74",
+                    "tertiary": "#4c5f66",
+                    "on-tertiary-fixed-variant": "#374951",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#d2e6ef"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "auto",
+                    "lg": "40px",
+                    "max-width-content": "1200px",
+                    "xs": "8px",
+                    "gutter": "20px",
+                    "xl": "64px",
+                    "sm": "16px",
+                    "margin-mobile": "16px",
+                    "base": "4px",
+                    "md": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Ambient Shadow for specific elevated elements */
+        .ambient-shadow {
+            box-shadow: 0 20px 40px -10px rgba(0, 93, 167, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased">
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex flex-col p-md gap-xs fixed left-0 top-0 h-full w-64 bg-surface-container-low border-r border-outline-variant z-50">
+<div class="mb-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Ruang Cerita</h1>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">Safe Space for Everyone</p>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<!-- Active: Beranda -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl font-bold transition-all scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md">Beranda</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all hover:text-primary active:opacity-80 scale-95 duration-200" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md">Ruang Chat</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all hover:text-primary active:opacity-80 scale-95 duration-200" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label-md text-label-md">Jurnal</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all hover:text-primary active:opacity-80 scale-95 duration-200" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-md text-label-md">Materi</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all hover:text-primary active:opacity-80 scale-95 duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</a>
+</div>
+<div class="mt-auto mb-lg">
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-3 rounded-xl hover:bg-secondary transition-colors mb-4 ambient-shadow">
+                Buka Sesi Chat
+            </button>
+<div class="flex flex-col gap-2 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-error hover:bg-error-container hover:text-on-error-container rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 md:ml-64">
+<!-- TopAppBar -->
+<header class="bg-surface docked full-width top-0 border-b border-outline-variant z-40">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-lg h-16 max-w-max-width-content mx-auto">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Button (Hidden on Desktop) -->
+<button class="md:hidden text-on-surface-variant p-2 -ml-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Brand (Visible only on mobile where SideNav is hidden, or if needed here, but SideNav has it. Keeping it as per JSON just in case, but hidden on desktop to avoid duplication) -->
+<span class="font-headline-md text-headline-md font-bold text-primary md:hidden">Ruang Cerita</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-variant active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-variant active:opacity-80">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant overflow-hidden ml-2 cursor-pointer">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A clean, modern headshot of a friendly school counselor in a well-lit office setting. The lighting is soft and natural, emphasizing approachability and trust. Minimalist background with subtle hints of indoor plants. Corporate yet warm aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2BaaVcAi-kzyeEuHowSGYDZaChUAeIQlAu5x2p3BYyjgPXyUruVD-g-q_yHrrUWt_rKj90ypSpiV469xA8gRphSRh0bPP-RvIjGZFb_GqHD-_ab_2sVOKs_upattlxWoCacY-JuVWIg3a5KQkK8vQ0_kOhY95wyS8iMSozFAP_ybWg2sJs-2PSXn1l3nMBiMprYpvqIuaN7xAX_d80lj7B4KwDmfd9oErzB2LIuucP-I1UAYRJHYogA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 overflow-y-auto p-margin-mobile md:p-lg w-full max-w-max-width-content mx-auto">
+<div class="mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-2">Manajemen Konsultasi</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Pantau dan kelola seluruh sesi konsultasi siswa. Tinjau riwayat, tugaskan kader, dan pastikan setiap siswa mendapatkan ruang aman yang mereka butuhkan.</p>
+</div>
+<!-- Search and Filter Module -->
+<div class="bg-surface-container-lowest rounded-[16px] border border-outline-variant p-md mb-lg ambient-shadow">
+<div class="flex flex-col lg:flex-row gap-md items-start lg:items-center justify-between">
+<!-- Search Bar -->
+<div class="relative w-full lg:w-96 group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-surface-container-low text-on-background placeholder:text-on-surface-variant rounded-[12px] border-2 border-transparent focus:bg-surface-container-lowest focus:border-primary focus:outline-none transition-all font-body-md text-body-md" placeholder="Cari ID Sesi atau Nama Samaran..." type="text"/>
+</div>
+<!-- Filter Chips -->
+<div class="flex flex-wrap items-center gap-3">
+<span class="font-label-md text-label-md text-on-surface-variant mr-2">Status:</span>
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md transition-colors border border-transparent">
+                            Semua
+                        </button>
+<button class="px-4 py-2 rounded-full bg-surface text-on-surface-variant border border-outline-variant hover:bg-surface-container-low hover:text-primary transition-colors font-label-md text-label-md">
+                            Menunggu
+                        </button>
+<button class="px-4 py-2 rounded-full bg-surface text-on-surface-variant border border-outline-variant hover:bg-surface-container-low hover:text-primary transition-colors font-label-md text-label-md">
+                            Berlangsung
+                        </button>
+<button class="px-4 py-2 rounded-full bg-surface text-on-surface-variant border border-outline-variant hover:bg-surface-container-low hover:text-primary transition-colors font-label-md text-label-md">
+                            Selesai
+                        </button>
+</div>
+</div>
+</div>
+<!-- Data Table / List -->
+<div class="bg-surface-container-lowest rounded-[16px] border border-outline-variant overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">ID Sesi</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Siswa (Anonim)</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Topik</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Kader Bertugas</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Status</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Tanggal</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold text-right">Aksi</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md">
+<!-- Row 1: Menunggu -->
+<tr class="border-b border-outline-variant hover:bg-surface transition-colors group">
+<td class="p-4 font-label-md text-label-md text-primary">#RC-8492</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-bold text-label-sm">
+                                            SP
+                                        </div>
+<span class="text-on-background font-medium">SobatPanda</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm opacity-90">
+                                        Kecemasan
+                                    </span>
+</td>
+<td class="p-4 text-on-surface-variant">- Belum Ditugaskan -</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-error font-medium">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+                                        Menunggu
+                                    </div>
+</td>
+<td class="p-4 text-on-surface-variant">Hari ini, 09:41</td>
+<td class="p-4 text-right">
+<button class="px-4 py-2 rounded-[12px] bg-transparent text-primary border border-outline-variant hover:border-primary hover:bg-primary-container hover:text-on-primary-container transition-all font-label-md text-label-md">
+                                        Tinjau
+                                    </button>
+</td>
+</tr>
+<!-- Row 2: Berlangsung -->
+<tr class="border-b border-outline-variant hover:bg-surface transition-colors group">
+<td class="p-4 font-label-md text-label-md text-primary">#RC-8490</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-bold text-label-sm">
+                                            LB
+                                        </div>
+<span class="text-on-background font-medium">LangitBiru</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm opacity-90">
+                                        Akademik
+                                    </span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small, subtle headshot of a teenage peer counselor looking friendly and attentive. Bright, warm lighting. Minimalist background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAQTez62lKaeJejmIKiXb-7a-jJHPbyeOV52_3UhbnBWRNq965w4PXtAK6VlhWehIR_w3SFmD5aq_YgYggLbgByeco49854_1pbDIZvP4__uLJXBNIfr8-658f6ZsDy2axs4hRvgGsxGgrQDQNON3Yyu9mrtw-uIaxBWjdX0hB1ml86I5lsZ0RNIPyHEPyQ1XV2dN4WcFV2I3w7Me_lmppr4IyMwAyFnGboNtBshtp4RMGvihXkr9skg"/>
+</div>
+<span class="text-on-background">Dian S.</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-primary font-medium">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                        Berlangsung
+                                    </div>
+</td>
+<td class="p-4 text-on-surface-variant">Hari ini, 08:15</td>
+<td class="p-4 text-right">
+<button class="px-4 py-2 rounded-[12px] bg-transparent text-primary border border-outline-variant hover:border-primary hover:bg-primary-container hover:text-on-primary-container transition-all font-label-md text-label-md">
+                                        Pantau
+                                    </button>
+</td>
+</tr>
+<!-- Row 3: Selesai -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="p-4 font-label-md text-label-md text-primary opacity-60">#RC-8475</td>
+<td class="p-4">
+<div class="flex items-center gap-3 opacity-70">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-bold text-label-sm">
+                                            BJ
+                                        </div>
+<span class="text-on-background font-medium">BintangJatuh</span>
+</div>
+</td>
+<td class="p-4 opacity-70">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">
+                                        Keluarga
+                                    </span>
+</td>
+<td class="p-4 opacity-70">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small, subtle headshot of a teenage peer counselor looking friendly and attentive. Bright, warm lighting. Minimalist background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNjK6ehTleYYmliEtXMJnPAsh3IORlHUJ9WRMqT_LxnDlW4421xAAqzNGNVJLyIAjHHacMeDsfPIJ9l9KR35Y47qH8V2fyyRrhCo_kJkxmth7tMdViQqpIujuheA_g1fl2MaqQzDZhC4OORbyNmG6fGDi6iJ_2fWYUoKzCKuRTtNPeNED3vyxK6MZfDdYaKGttd3EX1FRoMPUD7lmBxMDrAg9K8xN52797M1uSZUsFOjWnizxUDdiPFg"/>
+</div>
+<span class="text-on-background">Rizky A.</span>
+</div>
+</td>
+<td class="p-4 opacity-70">
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                        Selesai
+                                    </div>
+</td>
+<td class="p-4 text-on-surface-variant opacity-70">Kemarin, 14:30</td>
+<td class="p-4 text-right">
+<button class="px-4 py-2 rounded-[12px] bg-transparent text-on-surface-variant border border-outline-variant hover:bg-surface-variant transition-all font-label-md text-label-md">
+                                        Riwayat
+                                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="bg-surface-container-low border-t border-outline-variant p-4 flex items-center justify-between">
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">Menampilkan 1-3 dari 45 Sesi</span>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

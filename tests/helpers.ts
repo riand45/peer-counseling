@@ -86,10 +86,30 @@ export async function signInTestUser(
   return { client: anon, session: data.session };
 }
 
+export async function createSignedInTestKader(
+  opts: { verified?: boolean; status?: string } = {},
+): Promise<{ id: string; client: SupabaseClient }> {
+  const user = await createTestUser("kader", { verified: opts.verified ?? true });
+  if (opts.status) {
+    const service = getServiceClient();
+    await service.from("profiles").update({ status: opts.status }).eq("id", user.id);
+  }
+  const { client } = await signInTestUser(user.email, user.password);
+  return { id: user.id, client };
+}
+
+export async function createSignedInTestGuru(
+  opts: { verified?: boolean } = {},
+): Promise<{ id: string; client: SupabaseClient }> {
+  const user = await createTestUser("guru", { verified: opts.verified ?? true });
+  const { client } = await signInTestUser(user.email, user.password);
+  return { id: user.id, client };
+}
+
 export async function createTestSession(input: {
   studentLocalId: string;
   assignedTo?: string;
-  topic?: string;
+  topics?: string[];
 }): Promise<string> {
   const service = getServiceClient();
   const { data, error } = await service
@@ -97,7 +117,7 @@ export async function createTestSession(input: {
     .insert({
       student_local_id: input.studentLocalId,
       assigned_to: input.assignedTo ?? null,
-      topic: input.topic ?? "akademik",
+      topics: input.topics ?? ["akademik"],
     })
     .select("id")
     .single();

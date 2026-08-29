@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ruang Cerita - Escalation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#005da7",
+                        "secondary-fixed": "#cde5ff",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-container-high": "#e7e8e9",
+                        "inverse-on-surface": "#f0f1f2",
+                        "inverse-surface": "#2e3132",
+                        "surface-dim": "#d9dadb",
+                        "primary-fixed-dim": "#a4c9ff",
+                        "primary-fixed": "#d4e3ff",
+                        "surface-bright": "#f8f9fa",
+                        "surface-tint": "#0060ac",
+                        "surface-container-low": "#f3f4f5",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-surface-variant": "#414751",
+                        "on-tertiary-fixed-variant": "#374951",
+                        "tertiary-fixed-dim": "#b6cad2",
+                        "on-primary-container": "#fdfcff",
+                        "inverse-primary": "#a4c9ff",
+                        "on-secondary-container": "#004b75",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-fixed-variant": "#004b74",
+                        "outline": "#717783",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#0b1e24",
+                        "outline-variant": "#c1c7d3",
+                        "tertiary-container": "#65777f",
+                        "tertiary": "#4c5f66",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d2e6ef",
+                        "surface-container": "#edeeef",
+                        "on-primary-fixed": "#001c39",
+                        "background": "#f8f9fa",
+                        "secondary-fixed-dim": "#94ccff",
+                        "on-surface": "#191c1d",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#001d32",
+                        "on-background": "#191c1d",
+                        "secondary": "#006398",
+                        "error": "#ba1a1a",
+                        "surface": "#f8f9fa",
+                        "secondary-container": "#6cbdfe",
+                        "on-tertiary-container": "#fafdff",
+                        "primary-container": "#2976c7",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "20px",
+                        "sm": "16px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "base": "4px",
+                        "margin-desktop": "auto",
+                        "margin-mobile": "16px",
+                        "max-width-content": "1200px",
+                        "md": "24px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .ambient-shadow { box-shadow: 0 20px 40px -10px rgba(0, 93, 167, 0.08); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen relative flex items-center justify-center">
+<!-- Blurred Background Context (Simulated Chat) -->
+<div class="absolute inset-0 w-full h-full p-6 md:p-12 filter blur-sm opacity-50 z-0 flex flex-col gap-4 pointer-events-none">
+<div class="flex justify-end mb-4">
+<div class="bg-primary text-on-primary rounded-2xl rounded-br-none px-4 py-3 max-w-[80%] md:max-w-md font-body-md text-body-md">
+                Saya merasa sangat tertekan akhir-akhir ini. Beban tugas dan masalah di rumah membuat saya sulit tidur.
+            </div>
+</div>
+<div class="flex justify-start mb-4">
+<div class="bg-surface-container-low text-on-surface rounded-2xl rounded-bl-none px-4 py-3 max-w-[80%] md:max-w-md font-body-md text-body-md">
+                Saya mengerti apa yang kamu rasakan. Sangat wajar merasa kewalahan ketika banyak hal terjadi bersamaan. Apakah kamu ingin membicarakan lebih detail tentang apa yang paling memberatkanmu saat ini?
+            </div>
+</div>
+</div>
+<!-- Modal Overlay Backdrop -->
+<div class="absolute inset-0 bg-surface-variant/40 backdrop-blur-sm z-10"></div>
+<!-- Escalation Modal -->
+<div class="relative z-20 w-full max-w-md mx-margin-mobile md:mx-auto bg-surface-container-lowest rounded-[24px] ambient-shadow border border-surface-container-highest overflow-hidden animate-[scale-up_0.2s_ease-out]">
+<!-- Header -->
+<div class="px-md pt-md pb-xs text-center relative">
+<div class="w-16 h-16 bg-error-container rounded-full flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined text-on-error-container" style="font-size: 32px; font-variation-settings: 'FILL' 1;">
+                    support_agent
+                </span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">Hubungi Guru/BK</h2>
+</div>
+<!-- Body -->
+<div class="px-md py-xs text-center">
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                Gunakan fitur ini jika kamu merasa kasus ini membutuhkan bantuan profesional dari guru atau konselor sekolah. Privasi tetap dijaga.
+            </p>
+<div class="text-left">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2" for="escalation-reason">Alasan Eskalasi (Opsional)</label>
+<textarea class="w-full bg-surface-container-low border-none rounded-xl p-4 font-body-md text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-colors resize-none" id="escalation-reason" placeholder="Tuliskan alasan eskalasi di sini..." rows="4"></textarea>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-md py-md flex flex-col sm:flex-row gap-3 mt-2">
+<button class="flex-1 px-6 py-3 rounded-xl border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors text-center order-2 sm:order-1">
+                Batal
+            </button>
+<button class="flex-1 px-6 py-3 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors text-center order-1 sm:order-2 shadow-sm">
+                Kirim ke Guru/BK
+            </button>
+</div>
+</div>
+<style>
+        @keyframes scale-up {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</body></html>

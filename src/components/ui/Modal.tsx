@@ -21,7 +21,7 @@ export function Modal({ open, onClose, title, description, children, footer }: M
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative w-full max-w-sm rounded-xl bg-surface-container-lowest p-md shadow-xl"
+        className="relative w-full max-w-[24rem] rounded-xl bg-surface-container-lowest p-md shadow-xl"
       >
         <button
           type="button"

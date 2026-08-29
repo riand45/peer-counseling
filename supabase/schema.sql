@@ -181,7 +181,7 @@ create table if not exists public.sessions (
   id uuid primary key default gen_random_uuid(),
   student_local_id uuid not null references public.student_identities (id) on delete cascade,
   assigned_to uuid references public.profiles (id) on delete set null,
-  topic public.topic not null,
+  topics public.topic[] not null,
   status public.session_status not null default 'waiting',
   started_at timestamptz,
   ended_at timestamptz,
@@ -575,3 +575,166 @@ select
   coalesce((u.raw_user_meta_data ->> 'role')::public.app_role, 'kader')
 from auth.users u
 on conflict (id) do nothing;
+
+-- -------------------------------------------------------------
+-- 23. RPC: transfer_session (Kader Portal Phase 2 — Alihkan Konsultasi)
+--
+--     Empirically confirmed (isolated probe tests against the live
+--     project, kept out of the committed suite): a kader's plain
+--     `update sessions set assigned_to = <someone else>` — even with
+--     no `.select()`/RETURNING attached, so it isn't the well-known
+--     "RETURNING re-checks the SELECT policy" case — is rejected with
+--     42501 "new row violates row-level security policy for table
+--     sessions" by "sessions: kader update sesi sendiri" (using:
+--     assigned_to = auth.uid()), despite that policy's own with_check
+--     reading a plain `true` (verified directly via `pg_policies`). A
+--     guru performing the identical reassignment via "sessions: guru
+--     update semua" (using/with_check: is_guru(), which doesn't
+--     depend on assigned_to at all) succeeds every time. So the
+--     failure tracks a policy whose USING clause is keyed on the very
+--     column being changed, not `with_check`'s literal text — the
+--     precise Postgres-internal mechanism wasn't chased further than
+--     that; treat "this specific shape errors" as the confirmed fact,
+--     not the general rule "USING always applies to the new row".
+--
+--     Given a WITH CHECK expression has no access to the pre-update
+--     row (no OLD.* here), no with_check text can special-case "the
+--     caller was the previous owner" for a USING clause shaped like
+--     this. This SECURITY DEFINER function moves the reassignment
+--     into an imperative check the trap can't reach: it re-verifies
+--     ownership AND destination eligibility explicitly, then writes
+--     with elevated privilege — RLS is bypassed only for this one
+--     write, and only after both checks pass. Not a general workaround
+--     for "USING clauses on the column being updated" — this table's
+--     specific policy shape, confirmed to actually fail, is what
+--     justifies the elevated-privilege write here.
+--
+--     Grant EXECUTE goes to `authenticated` (callable directly via
+--     .rpc() from any signed-in client, not only from
+--     transferSessionCore) — so every check in this function is the
+--     primary authorization gate for that direct path, not
+--     defense-in-depth behind the mirrored checks in TypeScript.
+--     Ordering matters for that reason: the ownership-gated UPDATE
+--     runs first (folded into one atomic statement, no separate
+--     select-then-update), and destination-eligibility is checked
+--     only after it succeeds — a caller who doesn't own p_session_id
+--     always gets 'Sesi tidak ditemukan' and learns nothing about
+--     whether p_to_kader_id is a real, available kader. If the
+--     eligibility check then fails, raising rolls back the earlier
+--     UPDATE (still inside the same function invocation/transaction),
+--     so no partial reassignment survives. The session_assignments
+--     audit insert lives here too, after both checks, so a rejected
+--     transfer can never leave a stray "transfer happened" audit row —
+--     insert-then-call-this-function would have exactly that gap.
+-- -------------------------------------------------------------
+create or replace function public.transfer_session(p_session_id uuid, p_to_kader_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.sessions
+  set assigned_to = p_to_kader_id
+  where id = p_session_id
+    and assigned_to = auth.uid()
+    and status <> 'ended';
+
+  if not found then
+    raise exception 'Sesi tidak ditemukan';
+  end if;
+
+  if not exists (
+    select 1 from public.profiles
+    where id = p_to_kader_id
+      and role = 'kader'
+      and is_verified
+      and status = 'available'
+  ) then
+    raise exception 'Kader tidak ditemukan';
+  end if;
+
+  insert into public.session_assignments (session_id, from_id, to_id, changed_by, reason)
+  values (p_session_id, auth.uid(), p_to_kader_id, auth.uid(), 'transfer');
+end;
+$$;
+
+revoke all on function public.transfer_session(uuid, uuid) from public;
+grant execute on function public.transfer_session(uuid, uuid) to authenticated;
+
+-- -------------------------------------------------------------
+-- 24. sessions.archived_at (Guru Phase 2: "Hapus Log" — arsip, bukan hapus)
+-- -------------------------------------------------------------
+alter table public.sessions add column if not exists archived_at timestamptz;
+
+-- -------------------------------------------------------------
+-- 25. Tabel professional_referrals (Guru Phase 2: "Alihkan ke Profesional")
+-- -------------------------------------------------------------
+create table if not exists public.professional_referrals (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references public.sessions (id) on delete cascade,
+  referred_by uuid not null references public.profiles (id) on delete cascade,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.professional_referrals enable row level security;
+
+-- -------------------------------------------------------------
+-- 26. GRANTS — professional_referrals
+-- -------------------------------------------------------------
+revoke all on public.professional_referrals from anon, authenticated;
+grant select, insert on public.professional_referrals to authenticated;
+
+-- -------------------------------------------------------------
+-- 27. RLS POLICIES — professional_referrals (guru-only, append-only)
+-- -------------------------------------------------------------
+drop policy if exists "professional_referrals: guru baca" on public.professional_referrals;
+create policy "professional_referrals: guru baca"
+  on public.professional_referrals for select
+  to authenticated
+  using (public.is_guru());
+
+drop policy if exists "professional_referrals: guru buat" on public.professional_referrals;
+create policy "professional_referrals: guru buat"
+  on public.professional_referrals for insert
+  to authenticated
+  with check (public.is_guru() and referred_by = auth.uid());
+
+-- -------------------------------------------------------------
+-- 28. Trigger: lindungi kolom archived_at di sessions
+--
+--     Policy "sessions: kader update sesi sendiri" mengizinkan kader
+--     meng-update BARIS sesi yang ditugaskan padanya dengan
+--     `with check (true)` — RLS tidak bisa membatasi KOLOM mana yang
+--     boleh diubah, jadi tanpa trigger ini kader bisa PATCH archived_at
+--     di sesinya sendiri dan menyembunyikannya dari semua tampilan guru
+--     (Beranda, Daftar Konsultasi, Statistik) sambil sesi tetap
+--     berjalan normal — kebalikan dari maksud "Hapus Log" (aksi guru).
+--
+--     Sama seperti protect_profile_privileged_columns: trigger before
+--     update yang mengembalikan archived_at ke nilai lama kalau pelaku
+--     update bukan is_guru(), dengan syarat auth.uid() is not null agar
+--     service_role dan SQL langsung (Dashboard SQL Editor) tetap bisa
+--     menulis kolom ini.
+-- -------------------------------------------------------------
+create or replace function public.protect_sessions_archived_at()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.archived_at is distinct from old.archived_at
+     and auth.uid() is not null
+     and not public.is_guru() then
+    new.archived_at := old.archived_at;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_session_archived_at_update on public.sessions;
+create trigger on_session_archived_at_update
+  before update on public.sessions
+  for each row execute procedure public.protect_sessions_archived_at();
