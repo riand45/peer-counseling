@@ -85,7 +85,7 @@ export function ConsultationListScreen() {
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Cari ID Sesi atau Nama Samaran..."
-          className="w-full rounded-md border-2 border-transparent bg-surface-container-low px-3 py-2.5 text-body-md text-on-surface outline-none transition-colors focus:border-primary focus:bg-surface-container-lowest md:max-w-sm"
+          className="w-full rounded-md border-2 border-transparent bg-surface-container-low px-3 py-2.5 text-body-md text-on-surface outline-none transition-colors focus:border-primary focus:bg-surface-container-lowest md:max-w-[24rem]"
         />
         <div className="inline-flex flex-wrap gap-1 rounded-full border border-outline-variant bg-surface-container-low p-1">
           {STATUS_TABS.map((tab) => (

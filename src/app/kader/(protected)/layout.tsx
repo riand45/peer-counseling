@@ -36,7 +36,7 @@ export default async function KaderLayout({ children }: { children: React.ReactN
   if (!profile.is_verified) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface p-sm">
-        <div className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center">
+        <div className="w-full max-w-[28rem] rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center">
           <h1 className="text-headline-md font-bold text-on-surface">Menunggu verifikasi</h1>
           <p className="mt-2 text-body-md text-on-surface-variant">
             Akun kader Anda belum diverifikasi oleh Guru BK. Silakan tunggu

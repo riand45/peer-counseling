@@ -40,7 +40,7 @@ export function LoginCard({
 }: LoginCardProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-surface p-sm">
-      <div className="w-full max-w-[24rem]">
+      <div className="w-full max-w-[28rem]">
         <Link
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-label-md font-semibold text-on-surface-variant transition-colors hover:text-on-surface"
