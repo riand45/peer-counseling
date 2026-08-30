@@ -528,3 +528,68 @@ export async function getGuruStatisticsCore(
     topicDistribution,
   };
 }
+
+const PROFILE_PAGE_SIZE = 20;
+
+export async function listProfilesCore(
+  supabase: SupabaseClient,
+  input: {
+    role?: "kader" | "guru";
+    search?: string;
+    page: number;
+    pageSize?: number;
+  },
+): Promise<import("./types").ProfileListResult> {
+  const pageSize = input.pageSize ?? PROFILE_PAGE_SIZE;
+
+  let query = supabase
+    .from("profiles")
+    .select("id, full_name, role, is_verified, created_at")
+    .order("created_at", { ascending: false });
+
+  if (input.role) {
+    query = query.eq("role", input.role);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    throw new Error("Gagal memuat daftar profil");
+  }
+
+  const rows = data ?? [];
+  const search = input.search?.trim().toLowerCase();
+  const filtered = search
+    ? rows.filter(
+        (row) =>
+          (row.full_name as string | null)?.toLowerCase().includes(search) ||
+          (row.id as string).toLowerCase().includes(search),
+      )
+    : rows;
+
+  const page = Math.max(1, input.page);
+  const start = (page - 1) * pageSize;
+  const items = filtered.slice(start, start + pageSize).map((row) => ({
+    id: row.id as string,
+    fullName: row.full_name as string | null,
+    role: row.role as "kader" | "guru",
+    isVerified: Boolean(row.is_verified),
+    createdAt: row.created_at as string,
+  }));
+
+  return { items, total: filtered.length, page, pageSize };
+}
+
+export async function verifyProfileCore(
+  supabase: SupabaseClient,
+  profileId: string,
+  isVerified: boolean,
+): Promise<void> {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_verified: isVerified })
+    .eq("id", profileId);
+
+  if (error) {
+    throw new Error("Gagal memperbarui status verifikasi");
+  }
+}

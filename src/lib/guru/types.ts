@@ -80,3 +80,20 @@ export type GuruStatistics = {
   statusDistribution: StatusDistributionEntry[];
   topicDistribution: TopicDistributionEntry[];
 };
+
+export type ProfileRole = "kader" | "guru";
+
+export type ProfileListItem = {
+  id: string;
+  fullName: string | null;
+  role: ProfileRole;
+  isVerified: boolean;
+  createdAt: string;
+};
+
+export type ProfileListResult = {
+  items: ProfileListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+};

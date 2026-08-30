@@ -1,10 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore, getGuruStatisticsCore } from "./core";
+import { endConsultationAsGuruCore, getConsultationDetailCore, getGuruDashboardCore, listConsultationsCore, takeOverConsultationCore, archiveSessionCore, referToProfessionalCore, getGuruStatisticsCore, listProfilesCore, verifyProfileCore } from "./core";
 import { revalidatePath } from "next/cache";
 import type { SessionStatus } from "@/lib/kader/types";
-import type { ConsultationDetail, ConsultationListResult, GuruDashboard, GuruStatistics, StatisticsRangeDays } from "./types";
+import type { ConsultationDetail, ConsultationListResult, GuruDashboard, GuruStatistics, ProfileListResult, StatisticsRangeDays } from "./types";
 
 export async function getGuruDashboard(): Promise<GuruDashboard> {
   const supabase = await createClient();
@@ -57,4 +57,22 @@ export async function referToProfessional(input: { sessionId: string; note?: str
 export async function getGuruStatistics(rangeDays: StatisticsRangeDays): Promise<GuruStatistics> {
   const supabase = await createClient();
   return getGuruStatisticsCore(supabase, rangeDays);
+}
+
+export async function listProfiles(input: {
+  role?: "kader" | "guru";
+  search?: string;
+  page: number;
+}): Promise<ProfileListResult> {
+  const supabase = await createClient();
+  return listProfilesCore(supabase, input);
+}
+
+export async function verifyProfile(input: {
+  profileId: string;
+  isVerified: boolean;
+}): Promise<void> {
+  const supabase = await createClient();
+  await verifyProfileCore(supabase, input.profileId, input.isVerified);
+  revalidatePath("/guru/verifikasi");
 }

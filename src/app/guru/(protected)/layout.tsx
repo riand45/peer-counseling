@@ -8,6 +8,7 @@ const navItems = [
   { href: "/guru", label: "Beranda", icon: "🏠" },
   { href: "/guru/konsultasi", label: "Daftar Konsultasi", icon: "📋" },
   { href: "/guru/statistik", label: "Statistik", icon: "📊" },
+  { href: "/guru/verifikasi", label: "Verifikasi Profil", icon: "🛡️" },
   { href: "/guru/profil", label: "Profil", icon: "🙂" },
 ];
 
