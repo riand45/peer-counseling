@@ -7,6 +7,7 @@ import type { KaderDashboard } from "@/lib/kader/types";
 import { StatusToggle } from "./StatusToggle";
 import { SessionCard } from "./SessionCard";
 import { Button } from "@/components/ui/Button";
+import { createClient } from "@/lib/supabase/client";
 
 function getWaitingDuration(startedAt: string | null): string {
   if (!startedAt) return "Menunggu";
@@ -27,9 +28,54 @@ export function DashboardScreen() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    getKaderDashboard()
-      .then(setDashboard)
-      .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat dashboard"));
+    const supabase = createClient();
+    let cancelled = false;
+    let channelRef: ReturnType<typeof supabase.channel> | null = null;
+
+    async function setup() {
+      // Initial data fetch
+      try {
+        const data = await getKaderDashboard();
+        if (!cancelled) setDashboard(data);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Gagal memuat dashboard");
+      }
+
+      // Get current user for scoped filter
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+
+      // Build channel and register listener BEFORE subscribing
+      const ch = supabase.channel(`kader-dashboard-${user.id}-${Date.now()}`);
+      ch.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sessions",
+          filter: `assigned_to=eq.${user.id}`,
+        },
+        () => {
+          if (cancelled) return;
+          getKaderDashboard()
+            .then((data) => { if (!cancelled) setDashboard(data); })
+            .catch((err) => console.error("Realtime dashboard refresh error:", err));
+        }
+      );
+      ch.subscribe();
+      channelRef = ch;
+    }
+
+    setup();
+
+    return () => {
+      cancelled = true;
+      if (channelRef) {
+        channelRef.unsubscribe();
+        supabase.removeChannel(channelRef);
+        channelRef = null;
+      }
+    };
   }, []);
 
   async function handleAccept(sessionId: string) {
