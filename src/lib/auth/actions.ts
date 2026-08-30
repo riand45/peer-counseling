@@ -26,6 +26,7 @@ async function signupAs(role: AppRole, formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const fullName = (formData.get("full_name") as string) ?? "";
+  const registerPath = role === "guru" ? "/guru/daftar" : "/kader/daftar";
   const loginPath = role === "guru" ? "/guru/login" : "/kader/login";
 
   const { data, error } = await supabase.auth.signUp({
@@ -37,7 +38,7 @@ async function signupAs(role: AppRole, formData: FormData) {
   });
 
   if (error) {
-    redirect(`${loginPath}?error=${encodeURIComponent(error.message)}`);
+    redirect(`${registerPath}?error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath("/", "layout");

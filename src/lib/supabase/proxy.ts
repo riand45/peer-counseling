@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
   // - /kader/login : login/daftar kader
   // - /guru/login  : login/daftar guru
   // - /auth        : callback OAuth/email confirmation
-  const publicPrefixes = ["/student", "/kader/login", "/guru/login", "/auth"];
+  const publicPrefixes = ["/student", "/kader/login", "/kader/daftar", "/guru/login", "/guru/daftar", "/auth"];
   const isPublicPath =
     pathname === "/" || publicPrefixes.some((prefix) => pathname.startsWith(prefix));
 

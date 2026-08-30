@@ -1,5 +1,5 @@
-import { login } from "@/lib/auth/actions";
-import { LoginPage } from "@/components/auth/LoginPage";
+import { signupKader } from "@/lib/auth/actions";
+import { RegisterPage } from "@/components/auth/RegisterPage";
 
 function KaderIcon() {
   return (
@@ -10,7 +10,7 @@ function KaderIcon() {
   );
 }
 
-export default async function KaderLoginPage({
+export default async function KaderDaftarPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; message?: string }>;
@@ -18,15 +18,15 @@ export default async function KaderLoginPage({
   const { error, message } = await searchParams;
 
   return (
-    <LoginPage
+    <RegisterPage
       role="kader"
-      title="Masuk sebagai Kader"
-      subtitle="Pendamping sebaya yang mendampingi teman-temannya."
+      title="Daftar sebagai Kader"
+      subtitle="Bergabung sebagai pendamping sebaya untuk membantu teman."
       accent="primary"
       icon={<KaderIcon />}
       iconBg="bg-primary text-on-primary"
-      loginAction={login}
-      registerHref="/kader/daftar"
+      signupAction={signupKader}
+      loginHref="/kader/login"
       error={error}
       message={message}
     />

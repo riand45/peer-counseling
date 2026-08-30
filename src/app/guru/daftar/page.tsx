@@ -1,5 +1,5 @@
-import { login } from "@/lib/auth/actions";
-import { LoginPage } from "@/components/auth/LoginPage";
+import { signupGuru } from "@/lib/auth/actions";
+import { RegisterPage } from "@/components/auth/RegisterPage";
 
 function GuruIcon() {
   return (
@@ -10,7 +10,7 @@ function GuruIcon() {
   );
 }
 
-export default async function GuruLoginPage({
+export default async function GuruDaftarPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; message?: string }>;
@@ -18,15 +18,15 @@ export default async function GuruLoginPage({
   const { error, message } = await searchParams;
 
   return (
-    <LoginPage
+    <RegisterPage
       role="guru"
-      title="Masuk sebagai Guru BK"
-      subtitle="Pantau dan dampingi konsultasi siswa."
+      title="Daftar sebagai Guru BK"
+      subtitle="Buat akun untuk memantau dan mendampingi konsultasi siswa."
       accent="tertiary"
       icon={<GuruIcon />}
       iconBg="bg-tertiary text-on-tertiary"
-      loginAction={login}
-      registerHref="/guru/daftar"
+      signupAction={signupGuru}
+      loginHref="/guru/login"
       error={error}
       message={message}
     />
