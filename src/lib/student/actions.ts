@@ -90,7 +90,7 @@ export async function startSession(input: {
       student_local_id: input.studentLocalId,
       assigned_to: input.kaderId,
       topics: input.topics,
-      status: "active",
+      status: "waiting",
       started_at: new Date().toISOString(),
     })
     .select("id")

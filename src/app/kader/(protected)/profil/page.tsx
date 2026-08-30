@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { StatusToggle } from "@/components/kader/StatusToggle";
 import { BioEditor } from "@/components/kader/BioEditor";
 import { TopicsEditor } from "@/components/kader/TopicsEditor";
+import { Button } from "@/components/ui/Button";
+import { signout } from "@/lib/auth/actions";
 import type { KaderStatus, Topic } from "@/lib/student/types";
 
 export default async function KaderProfilPage() {
@@ -57,6 +59,12 @@ export default async function KaderProfilPage() {
         </p>
         <TopicsEditor topics={topics} />
       </div>
+
+      <form action={signout} className="mt-2">
+        <Button type="submit" variant="ghost" className="w-full text-error border-error/30 hover:bg-error-container/10">
+          Keluar / Log Out
+        </Button>
+      </form>
     </div>
   );
 }

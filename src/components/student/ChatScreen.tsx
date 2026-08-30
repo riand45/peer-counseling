@@ -26,6 +26,30 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 
+function getRelativeDateLabel(isoString: string): string {
+  const date = new Date(isoString);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+  if (isSameDay(date, today)) {
+    return "Hari ini";
+  } else if (isSameDay(date, yesterday)) {
+    return "Kemarin";
+  } else {
+    return date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: date.getFullYear() === today.getFullYear() ? undefined : "numeric",
+    });
+  }
+}
+
 export function ChatScreen({ sessionId }: { sessionId: string }) {
   const studentLocalId = useRequireStudentIdentity();
 
@@ -91,26 +115,44 @@ function ChatSession({
 
   return (
     <main className="flex min-h-screen flex-col bg-surface">
-      <header className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-sm py-3">
+      <header className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-sm py-3 w-full shrink-0">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => router.back()} aria-label="Kembali">
-            ←
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Kembali"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
+          >
+            <span className="text-headline-md leading-none font-bold">←</span>
           </button>
-          <p className="text-label-md font-semibold text-on-surface">
-            {kaderInfo?.fullName ?? "Kader"}
-          </p>
+          <div className="flex items-center gap-2">
+            <KaderAvatar fullName={kaderInfo?.fullName} />
+            <div>
+              <p className="text-body-md font-bold text-on-surface leading-tight">
+                {kaderInfo?.fullName ?? "Kader"}
+              </p>
+              <p className="text-label-sm text-on-surface-variant leading-none">
+                Peer Counselor
+              </p>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setReportOpen(true)}
             aria-label="Laporkan Sesi"
-            className="text-on-surface-variant hover:text-error"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low transition-colors text-headline-sm"
           >
             🚩
           </button>
-          <Button variant="ghost" onClick={handleEnd} disabled={ending}>
-            {ending ? "Mengakhiri..." : "Selesaikan Sesi"}
+          <Button
+            variant="secondary"
+            onClick={handleEnd}
+            disabled={ending}
+            className="py-1 px-3 text-label-sm"
+          >
+            {ending ? "..." : "Selesaikan"}
           </Button>
         </div>
       </header>
@@ -131,22 +173,36 @@ function ChatSession({
         </p>
       )}
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-sm">
-        {messages.map((message) => (
-          <ChatBubble
-            key={message.id}
-            senderRole={message.senderRole}
-            viewerRole="student"
-            body={message.body}
-            timestamp={formatTime(message.createdAt)}
-            avatarNode={
-              message.senderRole !== "student" ? (
-                <KaderAvatar fullName={kaderInfo?.fullName} />
-              ) : undefined
-            }
-            readReceipt={message.senderRole === "student" ? "sent" : undefined}
-          />
-        ))}
+      <div className="flex-1 space-y-3 overflow-y-auto p-sm bg-surface-container-lowest animate-fade-in">
+        {messages.map((message, index) => {
+          const dateLabel = getRelativeDateLabel(message.createdAt);
+          const prevMessage = index > 0 ? messages[index - 1] : null;
+          const showDateDivider = !prevMessage || getRelativeDateLabel(prevMessage.createdAt) !== dateLabel;
+
+          return (
+            <div key={message.id} className="flex flex-col gap-3">
+              {showDateDivider && (
+                <div className="flex justify-center my-4 animate-fade-in">
+                  <span className="rounded-full bg-surface-container-high px-3.5 py-1 text-label-sm font-semibold text-on-surface-variant shadow-xs">
+                    {dateLabel}
+                  </span>
+                </div>
+              )}
+              <ChatBubble
+                senderRole={message.senderRole}
+                viewerRole="student"
+                body={message.body}
+                timestamp={formatTime(message.createdAt)}
+                avatarNode={
+                  message.senderRole !== "student" ? (
+                    <KaderAvatar fullName={kaderInfo?.fullName} />
+                  ) : undefined
+                }
+                readReceipt={message.senderRole === "student" ? "sent" : undefined}
+              />
+            </div>
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 

@@ -8,5 +8,5 @@ type RoleShellProps = {
 };
 
 export function StudentShell(props: RoleShellProps) {
-  return <AppShell title="Area Siswa" {...props} />;
+  return <AppShell title="Area Siswa" layoutMode="mobile" {...props} />;
 }

@@ -8,5 +8,5 @@ type RoleShellProps = {
 };
 
 export function KaderShell(props: RoleShellProps) {
-  return <AppShell title="Area Kader" {...props} />;
+  return <AppShell title="Area Kader" layoutMode="mobile" {...props} />;
 }

@@ -6,6 +6,7 @@ import {
   getKaderDashboardCore,
   updateKaderStatusCore,
   endKaderSessionCore,
+  acceptKaderSessionCore,
   getSessionStudentInfoCore,
   updateKaderBioCore,
   updateKaderTopicsCore,
@@ -31,6 +32,12 @@ export async function updateKaderStatus(status: KaderStatus): Promise<void> {
 export async function endKaderSession(input: { sessionId: string }): Promise<void> {
   const supabase = await createClient();
   await endKaderSessionCore(supabase, input.sessionId);
+  revalidatePath("/kader");
+}
+
+export async function acceptKaderSession(input: { sessionId: string }): Promise<void> {
+  const supabase = await createClient();
+  await acceptKaderSessionCore(supabase, input.sessionId);
   revalidatePath("/kader");
 }
 

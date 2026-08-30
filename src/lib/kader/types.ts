@@ -8,10 +8,17 @@ export type KaderDashboardSession = {
   lastMessageAt: string | null;
 };
 
+export type KaderDashboardWaitingSession = {
+  id: string;
+  studentDisplayName: string;
+  startedAt: string | null;
+};
+
 export type KaderDashboard = {
   fullName: string;
   status: KaderStatus;
   activeSessions: KaderDashboardSession[];
+  waitingSessions: KaderDashboardWaitingSession[];
 };
 
 export type SessionStatus = "waiting" | "active" | "escalated" | "ended";

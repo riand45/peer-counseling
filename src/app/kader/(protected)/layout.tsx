@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 
 const navItems = [
   { href: "/kader", label: "Beranda", icon: "🏠" },
+  { href: "/kader/konsultasi", label: "Konsultasi", icon: "💬" },
   { href: "/kader/profil", label: "Profil", icon: "🙂" },
 ];
 
@@ -53,16 +54,7 @@ export default async function KaderLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <KaderShell
-      navItems={navItems}
-      primaryAction={
-        <form action={signout}>
-          <Button type="submit" variant="ghost" className="w-full">
-            Keluar
-          </Button>
-        </form>
-      }
-    >
+    <KaderShell navItems={navItems}>
       {children}
     </KaderShell>
   );

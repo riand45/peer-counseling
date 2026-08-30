@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
 import { ChatBubble } from "@/components/ui/ChatBubble";
 import { EscalationModal } from "@/components/kader/EscalationModal";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
@@ -28,6 +27,30 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 
+function getRelativeDateLabel(isoString: string): string {
+  const date = new Date(isoString);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+  if (isSameDay(date, today)) {
+    return "Hari ini";
+  } else if (isSameDay(date, yesterday)) {
+    return "Kemarin";
+  } else {
+    return date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: date.getFullYear() === today.getFullYear() ? undefined : "numeric",
+    });
+  }
+}
+
 export function ChatScreen({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const [draft, setDraft] = useState("");
@@ -36,6 +59,7 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
   const [escalationNotice, setEscalationNotice] = useState<string | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [studentInfo, setStudentInfo] = useState<SessionStudentInfo | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { messages, error, send } = useSessionChat(sessionId);
@@ -88,40 +112,83 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
 
   return (
     <main className="flex min-h-screen flex-col bg-surface">
-      <header className="flex items-center justify-between gap-2 border-b border-outline-variant bg-surface-container-lowest px-sm py-3">
+      <header className="flex items-center justify-between gap-2 border-b border-outline-variant bg-surface-container-lowest px-sm py-3 w-full shrink-0">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => router.back()} aria-label="Kembali">
-            ←
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Kembali"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
+          >
+            <span className="text-headline-md leading-none font-bold">←</span>
           </button>
-          <div>
-            <p className="text-label-md font-semibold text-on-surface">
-              {studentInfo?.displayName ?? "Siswa"}
-            </p>
-            {studentInfo && studentInfo.topics.length > 0 && (
-              <Chip tone="secondary" className="mt-1">
-                {TOPIC_LABELS[studentInfo.topics[0]]}
-              </Chip>
-            )}
+          <div className="flex items-center gap-2">
+            <StudentAvatar displayName={studentInfo?.displayName} />
+            <div>
+              <p className="text-body-md font-bold text-on-surface leading-tight">
+                {studentInfo?.displayName ?? "Siswa"}
+              </p>
+              {studentInfo && studentInfo.topics.length > 0 && (
+                <p className="text-label-sm text-on-surface-variant leading-none">
+                  Topik: {TOPIC_LABELS[studentInfo.topics[0]]}
+                </p>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        
+        <div className="flex items-center gap-2 relative">
           <Button
-            variant="ghost"
-            onClick={() => router.push(`/kader/alihkan/${sessionId}`)}
-            disabled={studentInfo?.status === "ended"}
+            variant="secondary"
+            onClick={handleEnd}
+            disabled={ending}
+            className="py-1 px-3 text-label-sm"
           >
-            Alihkan
+            {ending ? "..." : "Selesaikan"}
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => setEscalationOpen(true)}
-            disabled={studentInfo?.status === "ended" || studentInfo?.status === "escalated"}
-          >
-            {studentInfo?.status === "escalated" ? "Sudah Dieskalasi" : "Hubungi Guru/BK"}
-          </Button>
-          <Button variant="ghost" onClick={handleEnd} disabled={ending}>
-            {ending ? "Mengakhiri..." : "Selesaikan Sesi"}
-          </Button>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low transition-colors text-headline-md font-bold"
+              aria-label="Menu Tindakan"
+            >
+              ⋮
+            </button>
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 rounded-md bg-surface-container-lowest border border-outline-variant shadow-lg py-1 z-20 animate-fade-in">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      router.push(`/kader/alihkan/${sessionId}`);
+                    }}
+                    disabled={studentInfo?.status === "ended"}
+                    className="flex w-full px-4 py-2 text-left text-body-md text-on-surface hover:bg-surface-container-low disabled:opacity-50"
+                  >
+                    🔁 Alihkan Sesi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setEscalationOpen(true);
+                    }}
+                    disabled={studentInfo?.status === "ended" || studentInfo?.status === "escalated"}
+                    className="flex w-full px-4 py-2 text-left text-body-md text-on-surface hover:bg-surface-container-low disabled:opacity-50"
+                  >
+                    🚩 Hubungi Guru/BK
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -147,22 +214,36 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
         </p>
       )}
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-sm">
-        {messages.map((message) => (
-          <ChatBubble
-            key={message.id}
-            senderRole={message.senderRole}
-            viewerRole="kader"
-            body={message.body}
-            timestamp={formatTime(message.createdAt)}
-            avatarNode={
-              message.senderRole !== "kader" ? (
-                <StudentAvatar displayName={studentInfo?.displayName} />
-              ) : undefined
-            }
-            readReceipt={message.senderRole === "kader" ? "sent" : undefined}
-          />
-        ))}
+      <div className="flex-1 space-y-3 overflow-y-auto p-sm bg-surface-container-lowest animate-fade-in">
+        {messages.map((message, index) => {
+          const dateLabel = getRelativeDateLabel(message.createdAt);
+          const prevMessage = index > 0 ? messages[index - 1] : null;
+          const showDateDivider = !prevMessage || getRelativeDateLabel(prevMessage.createdAt) !== dateLabel;
+
+          return (
+            <div key={message.id} className="flex flex-col gap-3">
+              {showDateDivider && (
+                <div className="flex justify-center my-4 animate-fade-in">
+                  <span className="rounded-full bg-surface-container-high px-3.5 py-1 text-label-sm font-semibold text-on-surface-variant shadow-xs">
+                    {dateLabel}
+                  </span>
+                </div>
+              )}
+              <ChatBubble
+                senderRole={message.senderRole}
+                viewerRole="kader"
+                body={message.body}
+                timestamp={formatTime(message.createdAt)}
+                avatarNode={
+                  message.senderRole !== "kader" ? (
+                    <StudentAvatar displayName={studentInfo?.displayName} />
+                  ) : undefined
+                }
+                readReceipt={message.senderRole === "kader" ? "sent" : undefined}
+              />
+            </div>
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 

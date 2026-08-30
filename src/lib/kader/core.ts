@@ -25,9 +25,9 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
 
   const { data: sessions, error: sessionsError } = await supabase
     .from("sessions")
-    .select("id, topics, student_local_id, last_message_at")
+    .select("id, topics, student_local_id, last_message_at, status, started_at")
     .eq("assigned_to", user.id)
-    .eq("status", "active")
+    .in("status", ["active", "waiting"])
     .order("last_message_at", { ascending: false, nullsFirst: false });
 
   if (sessionsError) {
@@ -71,7 +71,10 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
     }
   }
 
-  const activeSessions: KaderDashboardSession[] = sessionRows.map((row) => {
+  const activeSessionRows = sessionRows.filter((row) => row.status === "active");
+  const waitingSessionRows = sessionRows.filter((row) => row.status === "waiting");
+
+  const activeSessions: KaderDashboardSession[] = activeSessionRows.map((row) => {
     const identity = identityById.get(row.student_local_id as string);
     const latest = latestMessageBySession.get(row.id as string);
     return {
@@ -83,10 +86,20 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
     };
   });
 
+  const waitingSessions = waitingSessionRows.map((row) => {
+    const identity = identityById.get(row.student_local_id as string);
+    return {
+      id: row.id as string,
+      studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+      startedAt: (row.started_at as string | null) ?? null,
+    };
+  });
+
   return {
     fullName: (profile.full_name as string | null) ?? "Kader",
     status: profile.status as KaderDashboard["status"],
     activeSessions,
+    waitingSessions,
   };
 }
 
@@ -118,6 +131,19 @@ export async function endKaderSessionCore(supabase: SupabaseClient, sessionId: s
 
   if (error || !data) {
     throw new Error("Gagal mengakhiri sesi, coba lagi");
+  }
+}
+
+export async function acceptKaderSessionCore(supabase: SupabaseClient, sessionId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("sessions")
+    .update({ status: "active", started_at: new Date().toISOString() })
+    .eq("id", sessionId)
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    throw new Error("Gagal menerima sesi, coba lagi");
   }
 }
 
