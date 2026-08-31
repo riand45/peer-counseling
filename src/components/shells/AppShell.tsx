@@ -1,9 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { NotificationModal } from "./NotificationModal";
+import { HelpModal } from "./HelpModal";
 
 export type NavItem = {
   href: string;
@@ -27,6 +29,10 @@ export function AppShell({
   layoutMode = "desktop",
 }: AppShellProps) {
   const pathname = usePathname();
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const isActive = (href: string) => {
     if (pathname === href) return true;
 
@@ -63,6 +69,7 @@ export function AppShell({
             {/* Bell Icon */}
             <button
               type="button"
+              onClick={() => setNotificationOpen(true)}
               className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors"
               aria-label="Notifikasi"
             >
@@ -70,12 +77,18 @@ export function AppShell({
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
-              <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-error" />
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-error" />
+                </span>
+              )}
             </button>
 
             {/* Help/Question Icon */}
             <button
               type="button"
+              onClick={() => setHelpOpen(true)}
               className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors"
               aria-label="Bantuan"
             >
@@ -144,6 +157,17 @@ export function AppShell({
             );
           })}
         </nav>
+
+        {/* Notification and Help Modals */}
+        <NotificationModal
+          open={notificationOpen}
+          onClose={() => setNotificationOpen(false)}
+          onUnreadCountChange={setUnreadCount}
+        />
+        <HelpModal
+          open={helpOpen}
+          onClose={() => setHelpOpen(false)}
+        />
       </div>
     );
   }
@@ -152,9 +176,25 @@ export function AppShell({
   return (
     <div className="flex min-h-screen bg-surface">
       <aside className="hidden w-64 flex-col gap-6 border-r border-outline-variant bg-surface-container-low p-md md:flex">
-        <div>
-          <p className="text-headline-md font-bold text-on-surface">Ruang Cerita</p>
-          <p className="text-label-sm text-on-surface-variant">{title}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-headline-md font-bold text-on-surface">Ruang Cerita</p>
+            <p className="text-label-sm text-on-surface-variant">{title}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotificationOpen(true)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container text-on-surface-variant transition-colors"
+            aria-label="Notifikasi"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            {unreadCount > 0 && (
+              <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-error" />
+            )}
+          </button>
         </div>
         <nav className="flex flex-col gap-1">
           {navItems.map((item) => (
@@ -179,6 +219,34 @@ export function AppShell({
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-sm py-3 md:hidden">
           <p className="text-headline-md font-bold text-on-surface">Ruang Cerita</p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setNotificationOpen(true)}
+              className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors"
+              aria-label="Notifikasi"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-error" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors"
+              aria-label="Bantuan"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 p-sm md:p-lg">{children}</main>
@@ -198,6 +266,17 @@ export function AppShell({
             </Link>
           ))}
         </nav>
+
+        {/* Desktop Notification and Help Modals */}
+        <NotificationModal
+          open={notificationOpen}
+          onClose={() => setNotificationOpen(false)}
+          onUnreadCountChange={setUnreadCount}
+        />
+        <HelpModal
+          open={helpOpen}
+          onClose={() => setHelpOpen(false)}
+        />
       </div>
     </div>
   );
