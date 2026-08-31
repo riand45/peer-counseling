@@ -38,9 +38,9 @@ export function AuthLayout({ children, accent, blobClass }: AuthLayoutProps) {
       <div className="relative w-full max-w-[28rem]">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-outline-variant/50 bg-surface-container-lowest/80 px-4 py-2 text-label-md font-semibold text-on-surface-variant backdrop-blur-sm transition-all hover:bg-surface-container-low hover:text-on-surface"
+          className="group mb-6 inline-flex items-center gap-2 text-label-md font-bold text-on-surface-variant transition-colors hover:text-primary"
         >
-          <span aria-hidden="true">←</span> Ruang Cerita
+          <span aria-hidden="true" className="transition-transform group-hover:-translate-x-1">←</span> Kembali ke Halaman Utama
         </Link>
 
         {children}
@@ -48,3 +48,4 @@ export function AuthLayout({ children, accent, blobClass }: AuthLayoutProps) {
     </main>
   );
 }
+

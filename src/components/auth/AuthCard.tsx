@@ -13,7 +13,7 @@ type AuthCardProps = {
 
 export function AuthCard({ icon, iconBg, title, subtitle, error, message, children }: AuthCardProps) {
   return (
-    <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest/90 p-8 shadow-[0_24px_60px_-16px_rgba(0,93,167,0.2)] backdrop-blur-md">
+    <div className="rounded-3xl bg-white/80 p-8 shadow-[0_32px_64px_-16px_rgba(0,93,167,0.12)] backdrop-blur-xl">
       {/* Icon */}
       <div
         className={cn(

@@ -106,7 +106,7 @@ export function RegisterPage({
           <Link
             href={loginHref}
             id={`${role}-login-link`}
-            className="flex w-full items-center justify-center rounded-xl border-2 border-outline-variant bg-transparent px-4 py-3 text-label-md font-semibold text-on-surface transition-all hover:border-primary/50 hover:bg-surface-container-low"
+            className="flex w-full items-center justify-center rounded-xl bg-surface-container-low px-4 py-3 text-label-md font-semibold text-on-surface transition-all hover:bg-surface-container-high"
           >
             Masuk
           </Link>

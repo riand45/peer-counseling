@@ -30,7 +30,7 @@ export default function KaderKonsultasiPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-lg font-sans">
+        <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-md font-sans">
           Daftar Konsultasi
         </h1>
         <p className="mt-1 text-body-md text-on-surface-variant">

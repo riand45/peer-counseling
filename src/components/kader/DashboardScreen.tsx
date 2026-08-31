@@ -110,7 +110,7 @@ export function DashboardScreen() {
       {/* Greeting and Status Toggle */}
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-lg">
+          <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-md">
             Halo, Kak {dashboard.fullName}!
           </h1>
           <p className="mt-1 text-body-md text-on-surface-variant leading-tight">
