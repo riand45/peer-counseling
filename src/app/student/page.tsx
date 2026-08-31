@@ -42,7 +42,7 @@ export default function StudentWelcomePage() {
   }
 
   return (
-    <main className="flex min-h-screen items-start justify-center bg-[#EEF2F8] py-8 px-4">
+    <main className="flex min-h-screen items-start justify-center py-8 px-4">
       {/* Card container */}
       <div className="w-full max-w-[26rem] bg-white rounded-3xl shadow-xl overflow-hidden">
 

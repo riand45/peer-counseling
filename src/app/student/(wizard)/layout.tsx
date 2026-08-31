@@ -29,7 +29,7 @@ function StepHeader() {
         <p className="text-label-md font-semibold text-on-surface">Ruang Cerita</p>
         <button
           type="button"
-          onClick={() => router.push("/")}
+          onClick={() => router.back()}
           aria-label="Tutup"
           className="text-headline-md text-on-surface-variant"
         >
