@@ -138,14 +138,16 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
         </div>
         
         <div className="flex items-center gap-2 relative">
-          <Button
-            variant="secondary"
-            onClick={handleEnd}
-            disabled={ending}
-            className="py-1 px-3 text-label-sm"
-          >
-            {ending ? "..." : "Selesaikan"}
-          </Button>
+          {studentInfo?.status !== "ended" && studentInfo?.status !== "escalated" && (
+            <Button
+              variant="secondary"
+              onClick={handleEnd}
+              disabled={ending}
+              className="py-1 px-3 text-label-sm"
+            >
+              {ending ? "..." : "Selesaikan"}
+            </Button>
+          )}
 
           <div className="relative">
             <button
