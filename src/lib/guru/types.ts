@@ -54,7 +54,9 @@ export type ConsultationListResult = {
 export type ConsultationDetail = {
   sessionId: string;
   studentDisplayName: string;
+  studentAvatarSeed: string | null;
   assignedKaderName: string | null;
+  assignedKaderAvatarSeed?: string | null;
   hasTakenOver: boolean;
   topics: Topic[];
   status: SessionStatus;

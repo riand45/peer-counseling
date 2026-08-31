@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { StudentEmojiAvatar } from "@/components/ui/Avatar";
 import { TOPIC_LABELS } from "@/lib/student/types";
 import { SESSION_STATUS_LABELS } from "@/lib/kader/types";
 import type { KaderDashboardSession, SessionStatus } from "@/lib/kader/types";
@@ -33,7 +34,6 @@ const STATUS_BADGE_STYLE: Partial<Record<SessionStatus, string>> = {
 };
 
 export function SessionCard({ session }: { session: KaderDashboardSession }) {
-  const initial = session.studentDisplayName.trim().charAt(0).toUpperCase() || "A";
   const primaryTopic = session.topics[0];
   const status = session.status ?? "active";
   const borderClass = STATUS_BORDER[status] ?? "border-r-primary";
@@ -46,12 +46,7 @@ export function SessionCard({ session }: { session: KaderDashboardSession }) {
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div
-              aria-hidden="true"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container"
-            >
-              {initial}
-            </div>
+            <StudentEmojiAvatar avatarSeed={session.studentAvatarSeed} size="md" />
             <div>
               <p className="text-body-md font-bold text-on-surface leading-tight">
                 {session.studentDisplayName}

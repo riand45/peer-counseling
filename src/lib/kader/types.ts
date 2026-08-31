@@ -4,6 +4,7 @@ export type KaderDashboardSession = {
   id: string;
   topics: Topic[];
   studentDisplayName: string;
+  studentAvatarSeed: string | null;
   lastMessagePreview: string | null;
   lastMessageAt: string | null;
   status?: SessionStatus;
@@ -12,6 +13,7 @@ export type KaderDashboardSession = {
 export type KaderDashboardWaitingSession = {
   id: string;
   studentDisplayName: string;
+  studentAvatarSeed: string | null;
   startedAt: string | null;
 };
 
@@ -41,6 +43,7 @@ export const SESSION_STATUS_TONES: Record<SessionStatus, "primary" | "error" | "
 
 export type SessionStudentInfo = {
   displayName: string;
+  avatarSeed: string | null;
   topics: Topic[];
   status: SessionStatus;
 };

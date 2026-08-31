@@ -4,24 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ChatBubble } from "@/components/ui/ChatBubble";
+import { StudentEmojiAvatar } from "@/components/ui/Avatar";
 import { EscalationModal } from "@/components/kader/EscalationModal";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
 import { endKaderSession, getSessionStudentInfo } from "@/lib/kader/actions";
 import { TOPIC_LABELS } from "@/lib/student/types";
 import type { SessionStudentInfo } from "@/lib/kader/types";
 
-function StudentAvatar({ displayName }: { displayName?: string }) {
-  const initial = displayName?.trim().charAt(0).toUpperCase() || "A";
-
-  return (
-    <div
-      aria-hidden="true"
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-container text-label-sm font-bold text-on-secondary-container"
-    >
-      {initial}
-    </div>
-  );
-}
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
@@ -125,7 +114,7 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
           <div className="flex items-center gap-2">
             {studentInfo ? (
               <>
-                <StudentAvatar displayName={studentInfo.displayName} />
+                <StudentEmojiAvatar avatarSeed={studentInfo.avatarSeed} size="sm" />
                 <div>
                   <p className="text-body-md font-bold text-on-surface leading-tight">
                     {studentInfo.displayName}
@@ -265,7 +254,7 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
                   timestamp={formatTime(message.createdAt)}
                   avatarNode={
                     message.senderRole !== "kader" ? (
-                      <StudentAvatar displayName={studentInfo?.displayName} />
+                      <StudentEmojiAvatar avatarSeed={studentInfo?.avatarSeed} size="sm" />
                     ) : undefined
                   }
                   readReceipt={message.senderRole === "kader" ? "sent" : undefined}

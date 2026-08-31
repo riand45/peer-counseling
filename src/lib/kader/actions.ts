@@ -9,6 +9,7 @@ import {
   acceptKaderSessionCore,
   getSessionStudentInfoCore,
   updateKaderBioCore,
+  updateKaderAvatarCore,
   updateKaderTopicsCore,
   getAvailableKaderForTransferCore,
   transferSessionCore,
@@ -49,6 +50,12 @@ export async function getSessionStudentInfo(input: { sessionId: string }): Promi
 export async function updateKaderBio(bio: string): Promise<void> {
   const supabase = await createClient();
   await updateKaderBioCore(supabase, bio);
+  revalidatePath("/kader/profil");
+}
+
+export async function updateKaderAvatar(avatarSeed: string): Promise<void> {
+  const supabase = await createClient();
+  await updateKaderAvatarCore(supabase, avatarSeed);
   revalidatePath("/kader/profil");
 }
 

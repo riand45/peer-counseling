@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { ChatBubble } from "@/components/ui/ChatBubble";
+import { StudentEmojiAvatar, KaderInitialAvatar } from "@/components/ui/Avatar";
 import { Modal } from "@/components/ui/Modal";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
 import {
@@ -34,21 +35,6 @@ function formatRelativeTime(iso: string): string {
   return `${diffDays} hari lalu`;
 }
 
-function SenderAvatar({ displayName, tone }: { displayName?: string; tone: "student" | "kader" }) {
-  const initial = displayName?.trim().charAt(0).toUpperCase() || "A";
-  const toneClasses =
-    tone === "student"
-      ? "bg-secondary-container text-on-secondary-container"
-      : "bg-tertiary-container text-on-tertiary-container";
-  return (
-    <div
-      aria-hidden="true"
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-label-sm font-bold ${toneClasses}`}
-    >
-      {initial}
-    </div>
-  );
-}
 
 export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
   const router = useRouter();
@@ -324,9 +310,9 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
                 timestamp={formatTime(message.createdAt)}
                 avatarNode={
                   message.senderRole === "student" ? (
-                    <SenderAvatar displayName={detail.studentDisplayName} tone="student" />
+                    <StudentEmojiAvatar avatarSeed={detail.studentAvatarSeed} size="sm" />
                   ) : message.senderRole === "kader" ? (
-                    <SenderAvatar displayName={detail.assignedKaderName ?? "Kader"} tone="kader" />
+                    <StudentEmojiAvatar avatarSeed={detail.assignedKaderAvatarSeed} size="sm" />
                   ) : undefined
                 }
                 readReceipt={message.senderRole === "guru" ? "sent" : undefined}

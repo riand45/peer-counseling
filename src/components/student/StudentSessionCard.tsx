@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { StudentEmojiAvatar } from "@/components/ui/Avatar";
 import { SESSION_STATUS_LABELS, SESSION_STATUS_TONES } from "@/lib/kader/types";
 import { TOPIC_EMOJI, TOPIC_LABELS } from "@/lib/student/types";
 import type { StudentSessionSummary } from "@/lib/student/types";
@@ -22,13 +23,16 @@ export function StudentSessionCard({ session }: { session: StudentSessionSummary
     <Link href={`/student/chat/${session.id}`}>
       <Card className="flex flex-col gap-2 transition-shadow hover:shadow-md">
         <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-label-md font-semibold text-on-surface">{session.kaderName ?? "Kader"}</p>
-            {primaryTopic && (
-              <Chip tone="secondary" className="mt-1">
-                {TOPIC_EMOJI[primaryTopic]} {TOPIC_LABELS[primaryTopic]}
-              </Chip>
-            )}
+          <div className="flex items-center gap-3">
+            <StudentEmojiAvatar avatarSeed={session.kaderAvatarSeed} size="md" />
+            <div>
+              <p className="text-label-md font-semibold text-on-surface">{session.kaderName ?? "Kader"}</p>
+              {primaryTopic && (
+                <Chip tone="secondary" className="mt-1">
+                  {TOPIC_EMOJI[primaryTopic]} {TOPIC_LABELS[primaryTopic]}
+                </Chip>
+              )}
+            </div>
           </div>
           <div className="flex flex-col items-end gap-1">
             <Chip tone={SESSION_STATUS_TONES[session.status]}>{SESSION_STATUS_LABELS[session.status]}</Chip>

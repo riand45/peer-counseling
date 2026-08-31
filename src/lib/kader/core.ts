@@ -84,6 +84,7 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
       id: row.id as string,
       topics: (row.topics as Topic[]) ?? [],
       studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+      studentAvatarSeed: (identity?.avatar_seed as string | null) ?? null,
       lastMessagePreview: latest?.body ?? null,
       lastMessageAt: (row.last_message_at as string | null) ?? latest?.created_at ?? null,
       status: row.status as SessionStatus,
@@ -95,6 +96,7 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
     return {
       id: row.id as string,
       studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+      studentAvatarSeed: (identity?.avatar_seed as string | null) ?? null,
       startedAt: (row.started_at as string | null) ?? null,
     };
   });
@@ -106,6 +108,7 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
       id: row.id as string,
       topics: (row.topics as Topic[]) ?? [],
       studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+      studentAvatarSeed: (identity?.avatar_seed as string | null) ?? null,
       lastMessagePreview: latest?.body ?? null,
       lastMessageAt: (row.last_message_at as string | null) ?? latest?.created_at ?? null,
       status: row.status as SessionStatus,
@@ -191,6 +194,7 @@ export async function getSessionStudentInfoCore(
       identity?.nickname as string | null | undefined,
       identity?.avatar_seed as string | null | undefined,
     ),
+    avatarSeed: (identity?.avatar_seed as string | null) ?? null,
     topics: (session.topics as Topic[]) ?? [],
     status: session.status as SessionStatus,
   };
@@ -216,6 +220,25 @@ export async function updateKaderBioCore(supabase: SupabaseClient, bio: string):
 
   if (error) {
     throw new Error("Gagal menyimpan bio");
+  }
+}
+
+export async function updateKaderAvatarCore(supabase: SupabaseClient, avatarSeed: string): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Anda harus login");
+  }
+
+  await supabase.auth.updateUser({
+    data: { avatar_seed: avatarSeed },
+  });
+
+  try {
+    await supabase.from("profiles").update({ avatar_seed: avatarSeed }).eq("id", user.id);
+  } catch {
+    // Non-fatal if column not yet in DB schema
   }
 }
 

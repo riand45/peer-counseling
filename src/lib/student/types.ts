@@ -44,6 +44,7 @@ export type KaderStatus = "available" | "busy" | "offline";
 export type KaderSummary = {
   id: string;
   fullName: string;
+  avatarSeed?: string | null;
   bio: string | null;
   topics: Topic[];
   status: KaderStatus;
@@ -74,6 +75,7 @@ export type StudentSessionSummary = {
   id: string;
   topics: Topic[];
   kaderName: string | null;
+  kaderAvatarSeed?: string | null;
   lastMessagePreview: string | null;
   lastMessageAt: string | null;
   status: SessionStatus;

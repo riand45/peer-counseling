@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { StudentEmojiAvatar } from "@/components/ui/Avatar";
 import { listAvailableKader } from "@/lib/student/actions";
 import { TOPIC_LABELS, type KaderSummary, type Topic } from "@/lib/student/types";
 import { useStoryWizard } from "../wizard-context";
@@ -17,17 +18,10 @@ function statusLabel(status: KaderSummary["status"]): string {
 }
 
 function KaderCard({ kader, onSelect }: { kader: KaderSummary; onSelect: (k: KaderSummary) => void }) {
-  const initial = kader.fullName.trim().charAt(0).toUpperCase() || "K";
-
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <div
-          aria-hidden="true"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-fixed text-headline-md font-bold text-on-primary-fixed"
-        >
-          {initial}
-        </div>
+        <StudentEmojiAvatar avatarSeed={kader.avatarSeed} size="lg" />
         <div>
           <p className="text-label-md font-semibold text-on-surface">Kak {kader.fullName}</p>
           <Chip tone={kader.status === "available" ? "primary" : "neutral"}>

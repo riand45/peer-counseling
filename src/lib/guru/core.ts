@@ -331,6 +331,16 @@ export async function getConsultationDetailCore(
   const kaderNameById = await resolveKaderNames(supabase, assignedTo ? [assignedTo] : []);
   const identity = identityById.get(session.student_local_id as string);
 
+  let assignedKaderAvatarSeed: string | null = null;
+  if (assignedTo) {
+    try {
+      const { data: kaderData } = await supabase.auth.admin.getUserById(assignedTo);
+      assignedKaderAvatarSeed = (kaderData?.user?.user_metadata?.avatar_seed as string | null) ?? "kucing";
+    } catch {
+      // Non-fatal
+    }
+  }
+
   const { data: referralRows } = await supabase
     .from("professional_referrals")
     .select("note, created_at")
@@ -345,7 +355,9 @@ export async function getConsultationDetailCore(
   return {
     sessionId: session.id as string,
     studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+    studentAvatarSeed: (identity?.avatar_seed as string | null) ?? null,
     assignedKaderName: assignedTo ? kaderNameById.get(assignedTo) ?? null : null,
+    assignedKaderAvatarSeed,
     hasTakenOver: assignedTo === user.id,
     topics: (session.topics as Topic[]) ?? [],
     status: session.status as SessionStatus,

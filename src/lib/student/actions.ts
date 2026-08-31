@@ -41,6 +41,15 @@ export async function createStudentIdentity(input: {
 
 export async function listAvailableKader(): Promise<KaderSummary[]> {
   const service = createServiceClient();
+
+  const { data: usersData } = await service.auth.admin.listUsers();
+  const avatarByUserId = new Map<string, string>();
+  for (const u of usersData?.users ?? []) {
+    if (u.user_metadata?.avatar_seed) {
+      avatarByUserId.set(u.id, u.user_metadata.avatar_seed as string);
+    }
+  }
+
   const { data, error } = await service
     .from("profiles")
     .select("id, full_name, bio, topics, status")
@@ -58,6 +67,7 @@ export async function listAvailableKader(): Promise<KaderSummary[]> {
     bio: row.bio as string | null,
     topics: (row.topics as Topic[] | null) ?? [],
     status: row.status as KaderSummary["status"],
+    avatarSeed: avatarByUserId.get(row.id as string) ?? (row as unknown as { avatar_seed?: string }).avatar_seed ?? "kucing",
   }));
 }
 
@@ -137,7 +147,7 @@ export async function endSession(input: {
 export async function getSessionKader(input: {
   sessionId: string;
   studentLocalId: string;
-}): Promise<{ fullName: string; status: KaderStatus } | null> {
+}): Promise<{ fullName: string; status: KaderStatus; avatarSeed?: string } | null> {
   const service = createServiceClient();
 
   const { data: session, error: sessionError } = await service
@@ -166,9 +176,20 @@ export async function getSessionKader(input: {
     return null;
   }
 
+  let avatarSeed = (kader as unknown as { avatar_seed?: string }).avatar_seed;
+  if (!avatarSeed && session.assigned_to) {
+    try {
+      const { data: userData } = await service.auth.admin.getUserById(session.assigned_to as string);
+      avatarSeed = userData?.user?.user_metadata?.avatar_seed as string | undefined;
+    } catch {
+      // Non-fatal fallback
+    }
+  }
+
   return {
     fullName: kader.full_name ?? "Kader",
     status: kader.status as KaderStatus,
+    avatarSeed: avatarSeed ?? "kucing",
   };
 }
 
@@ -197,14 +218,25 @@ export async function getStudentSessions(input: {
         .filter((id): id is string => Boolean(id)),
     ),
   ];
-  const kaderNameById = new Map<string, string>();
+  const kaderInfoById = new Map<string, { name: string; avatarSeed: string }>();
   if (kaderIds.length > 0) {
+    const { data: usersData } = await service.auth.admin.listUsers();
+    const avatarByUserId = new Map<string, string>();
+    for (const u of usersData?.users ?? []) {
+      if (u.user_metadata?.avatar_seed) {
+        avatarByUserId.set(u.id, u.user_metadata.avatar_seed as string);
+      }
+    }
+
     const { data: kaderProfiles } = await service
       .from("profiles")
       .select("id, full_name")
       .in("id", kaderIds);
     for (const row of kaderProfiles ?? []) {
-      kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Kader");
+      kaderInfoById.set(row.id as string, {
+        name: (row.full_name as string | null) ?? "Kader",
+        avatarSeed: avatarByUserId.get(row.id as string) ?? (row as unknown as { avatar_seed?: string }).avatar_seed ?? "kucing",
+      });
     }
   }
 
@@ -229,11 +261,13 @@ export async function getStudentSessions(input: {
 
   return sessionRows.map((row) => {
     const assignedTo = row.assigned_to as string | null;
+    const kaderInfo = assignedTo ? kaderInfoById.get(assignedTo) : null;
     const latest = latestMessageBySession.get(row.id as string);
     return {
       id: row.id as string,
       topics: (row.topics as Topic[]) ?? [],
-      kaderName: assignedTo ? kaderNameById.get(assignedTo) ?? null : null,
+      kaderName: kaderInfo?.name ?? null,
+      kaderAvatarSeed: kaderInfo?.avatarSeed ?? null,
       lastMessagePreview: latest?.body ?? null,
       lastMessageAt: (row.last_message_at as string | null) ?? latest?.created_at ?? null,
       status: row.status as StudentSessionSummary["status"],

@@ -4,23 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ChatBubble } from "@/components/ui/ChatBubble";
+import { StudentEmojiAvatar } from "@/components/ui/Avatar";
 import { useSessionChat } from "@/lib/chat/useSessionChat";
 import { endSession, getSessionKader } from "@/lib/student/actions";
 import { useRequireStudentIdentity } from "@/lib/student/useRequireStudentIdentity";
 import { ReportModal } from "./ReportModal";
 
-function KaderAvatar({ fullName }: { fullName?: string }) {
-  const initial = fullName?.trim().charAt(0).toUpperCase() || "K";
-
-  return (
-    <div
-      aria-hidden="true"
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed text-label-sm font-bold text-on-secondary-fixed"
-    >
-      {initial}
-    </div>
-  );
-}
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
@@ -71,7 +60,7 @@ function ChatSession({
   const [draft, setDraft] = useState("");
   const [ending, setEnding] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-  const [kaderInfo, setKaderInfo] = useState<{ fullName: string; status: string } | null>(null);
+  const [kaderInfo, setKaderInfo] = useState<{ fullName: string; status: string; avatarSeed?: string } | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -128,7 +117,7 @@ function ChatSession({
           <div className="flex items-center gap-2">
             {kaderInfo ? (
               <>
-                <KaderAvatar fullName={kaderInfo.fullName} />
+                <StudentEmojiAvatar avatarSeed={kaderInfo.avatarSeed} size="sm" />
                 <div>
                   <p className="text-body-md font-bold text-on-surface leading-tight">
                     {kaderInfo.fullName}
@@ -222,7 +211,7 @@ function ChatSession({
                   timestamp={formatTime(message.createdAt)}
                   avatarNode={
                     message.senderRole !== "student" ? (
-                      <KaderAvatar fullName={kaderInfo?.fullName} />
+                      <StudentEmojiAvatar avatarSeed={kaderInfo?.avatarSeed} size="sm" />
                     ) : undefined
                   }
                   readReceipt={message.senderRole === "student" ? "sent" : undefined}

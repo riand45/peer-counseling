@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { StudentEmojiAvatar } from "@/components/ui/Avatar";
 import type { KaderSummary } from "@/lib/student/types";
 
 export function TransferKaderCard({
@@ -10,17 +11,11 @@ export function TransferKaderCard({
   kader: KaderSummary;
   onSelect: (kader: KaderSummary) => void;
 }) {
-  const initial = kader.fullName.trim().charAt(0).toUpperCase() || "K";
 
   return (
     <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
-        <div
-          aria-hidden="true"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-fixed text-headline-md font-bold text-on-secondary-fixed"
-        >
-          {initial}
-        </div>
+        <StudentEmojiAvatar avatarSeed={kader.avatarSeed} size="lg" />
         <div>
           <div className="flex items-center gap-2">
             <p className="text-label-md font-semibold text-on-surface">Kak {kader.fullName}</p>
