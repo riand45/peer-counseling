@@ -49,7 +49,7 @@ export function AuthPasswordField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-label-md font-semibold text-on-surface">
+      <label htmlFor={id} className="text-sm font-semibold text-on-surface">
         {label}
       </label>
       <div className="relative flex items-center">
@@ -61,8 +61,9 @@ export function AuthPasswordField({
           minLength={minLength}
           placeholder="••••••••"
           className={cn(
-            "w-full rounded-xl border-2 border-transparent bg-surface-container-low pl-4 pr-12 py-3",
-            "text-body-md text-on-surface outline-none transition-all placeholder:text-on-surface-variant/60",
+            "w-full rounded-xl border-2 border-outline-variant/60 bg-surface-container-low pl-4 pr-12 py-3.5",
+            "text-sm text-on-surface outline-none transition-all duration-200 placeholder:text-on-surface-variant/50",
+            "hover:border-outline hover:bg-surface-container",
             "focus:bg-surface-container-lowest",
             focusClasses,
           )}
