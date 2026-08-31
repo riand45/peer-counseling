@@ -164,8 +164,51 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
   }
 
   if (!detail) {
-    return <p className="text-body-md text-on-surface-variant">Memuat detail sesi...</p>;
+    return (
+      <div className="flex flex-col gap-4 animate-pulse" aria-busy="true" aria-label="Memuat detail sesi">
+        <div className="h-4 w-48 rounded-full bg-surface-container-high" />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,320px)_1fr]">
+          {/* Sidebar: Detail + Tindakan cards */}
+          <div className="flex flex-col gap-4">
+            <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm flex flex-col gap-4">
+              <div className="h-5 w-24 rounded-full bg-surface-container-high" />
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex flex-col gap-1.5">
+                  <div className="h-3 w-20 rounded-full bg-surface-container-high" />
+                  <div className="h-4 w-32 rounded-full bg-surface-container-high" />
+                </div>
+              ))}
+            </div>
+            <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm flex flex-col gap-3">
+              <div className="h-5 w-36 rounded-full bg-surface-container-high" />
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-9 w-full rounded-lg bg-surface-container-high" />
+              ))}
+            </div>
+          </div>
+          {/* Chat transcript card */}
+          <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm flex flex-col gap-4">
+            <div className="h-5 w-40 rounded-full bg-surface-container-high" />
+            <div className="flex flex-col gap-4">
+              {/* Alternating chat bubbles */}
+              <div className="flex gap-2 items-end">
+                <div className="h-8 w-8 rounded-full bg-surface-container-high shrink-0" />
+                <div className="h-14 w-3/4 rounded-2xl bg-surface-container-high" />
+              </div>
+              <div className="flex gap-2 items-end justify-end">
+                <div className="h-10 w-2/3 rounded-2xl bg-surface-container-high" />
+              </div>
+              <div className="flex gap-2 items-end">
+                <div className="h-8 w-8 rounded-full bg-surface-container-high shrink-0" />
+                <div className="h-12 w-1/2 rounded-2xl bg-surface-container-high" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
+
 
   return (
     <div className="flex flex-col gap-4">

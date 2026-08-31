@@ -30,11 +30,31 @@ export default function KaderKonsultasiPage() {
 
   if (!dashboard) {
     return (
-      <p className="text-body-md text-on-surface-variant">
-        Memuat daftar konsultasi...
-      </p>
+      <div className="flex flex-col gap-6 animate-pulse" aria-busy="true" aria-label="Memuat daftar konsultasi">
+        {/* Header */}
+        <div className="flex flex-col gap-2">
+          <div className="h-7 w-52 rounded-full bg-surface-container-high" />
+          <div className="h-4 w-80 rounded-full bg-surface-container-high" />
+        </div>
+        {/* Tab bar */}
+        <div className="h-12 w-full rounded-xl bg-surface-container-low" />
+        {/* Session card skeletons */}
+        <div className="flex flex-col gap-4">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-3 rounded-2xl border border-outline-variant border-r-4 border-r-surface-container-high bg-surface-container-lowest p-sm">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-surface-container-high" />
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="h-4 w-36 rounded-full bg-surface-container-high" />
+                <div className="h-3 w-24 rounded-full bg-surface-container-high" />
+              </div>
+              <div className="h-3 w-12 rounded-full bg-surface-container-high shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
+
 
   const activeSessions = dashboard.activeSessions;
   const historySessions = dashboard.historySessions;

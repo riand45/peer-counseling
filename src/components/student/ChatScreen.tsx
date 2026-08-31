@@ -75,7 +75,7 @@ function ChatSession({
   const [reportOpen, setReportOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { messages, error, send } = useSessionChat(sessionId, studentLocalId);
+  const { messages, error, loading, send } = useSessionChat(sessionId, studentLocalId);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -126,15 +126,27 @@ function ChatSession({
             <span className="text-headline-md leading-none font-bold">←</span>
           </button>
           <div className="flex items-center gap-2">
-            <KaderAvatar fullName={kaderInfo?.fullName} />
-            <div>
-              <p className="text-body-md font-bold text-on-surface leading-tight">
-                {kaderInfo?.fullName ?? "Kader"}
-              </p>
-              <p className="text-label-sm text-on-surface-variant leading-none">
-                Peer Counselor
-              </p>
-            </div>
+            {kaderInfo ? (
+              <>
+                <KaderAvatar fullName={kaderInfo.fullName} />
+                <div>
+                  <p className="text-body-md font-bold text-on-surface leading-tight">
+                    {kaderInfo.fullName}
+                  </p>
+                  <p className="text-label-sm text-on-surface-variant leading-none">
+                    Peer Counselor
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 animate-pulse" aria-hidden="true">
+                <div className="h-8 w-8 rounded-full bg-surface-container-high shrink-0" />
+                <div className="flex flex-col gap-1.5">
+                  <div className="h-4 w-24 rounded-full bg-surface-container-high" />
+                  <div className="h-3 w-16 rounded-full bg-surface-container-high" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -174,35 +186,51 @@ function ChatSession({
       )}
 
       <div className="flex-1 space-y-3 overflow-y-auto p-sm bg-surface-container-lowest animate-fade-in">
-        {messages.map((message, index) => {
-          const dateLabel = getRelativeDateLabel(message.createdAt);
-          const prevMessage = index > 0 ? messages[index - 1] : null;
-          const showDateDivider = !prevMessage || getRelativeDateLabel(prevMessage.createdAt) !== dateLabel;
-
-          return (
-            <div key={message.id} className="flex flex-col gap-3">
-              {showDateDivider && (
-                <div className="flex justify-center my-4 animate-fade-in">
-                  <span className="rounded-full bg-surface-container-high px-3.5 py-1 text-label-sm font-semibold text-on-surface-variant shadow-xs">
-                    {dateLabel}
-                  </span>
-                </div>
-              )}
-              <ChatBubble
-                senderRole={message.senderRole}
-                viewerRole="student"
-                body={message.body}
-                timestamp={formatTime(message.createdAt)}
-                avatarNode={
-                  message.senderRole !== "student" ? (
-                    <KaderAvatar fullName={kaderInfo?.fullName} />
-                  ) : undefined
-                }
-                readReceipt={message.senderRole === "student" ? "sent" : undefined}
-              />
+        {loading ? (
+          <div className="flex flex-col gap-4 animate-pulse" aria-busy="true" aria-label="Memuat pesan">
+            <div className="flex gap-2 items-end">
+              <div className="h-8 w-8 rounded-full bg-surface-container-high shrink-0" />
+              <div className="h-10 w-2/3 rounded-2xl bg-surface-container-high" />
             </div>
-          );
-        })}
+            <div className="flex gap-2 items-end justify-end">
+              <div className="h-14 w-1/2 rounded-2xl bg-surface-container-high" />
+            </div>
+            <div className="flex gap-2 items-end">
+              <div className="h-8 w-8 rounded-full bg-surface-container-high shrink-0" />
+              <div className="h-12 w-3/4 rounded-2xl bg-surface-container-high" />
+            </div>
+          </div>
+        ) : (
+          messages.map((message, index) => {
+            const dateLabel = getRelativeDateLabel(message.createdAt);
+            const prevMessage = index > 0 ? messages[index - 1] : null;
+            const showDateDivider = !prevMessage || getRelativeDateLabel(prevMessage.createdAt) !== dateLabel;
+
+            return (
+              <div key={message.id} className="flex flex-col gap-3">
+                {showDateDivider && (
+                  <div className="flex justify-center my-4 animate-fade-in">
+                    <span className="rounded-full bg-surface-container-high px-3.5 py-1 text-label-sm font-semibold text-on-surface-variant shadow-xs">
+                      {dateLabel}
+                    </span>
+                  </div>
+                )}
+                <ChatBubble
+                  senderRole={message.senderRole}
+                  viewerRole="student"
+                  body={message.body}
+                  timestamp={formatTime(message.createdAt)}
+                  avatarNode={
+                    message.senderRole !== "student" ? (
+                      <KaderAvatar fullName={kaderInfo?.fullName} />
+                    ) : undefined
+                  }
+                  readReceipt={message.senderRole === "student" ? "sent" : undefined}
+                />
+              </div>
+            );
+          })
+        )}
         <div ref={bottomRef} />
       </div>
 

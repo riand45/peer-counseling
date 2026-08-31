@@ -46,8 +46,24 @@ export function ProfilScreen() {
   }
 
   if (!profile) {
-    return <p className="text-body-md text-on-surface-variant">Memuat profil...</p>;
+    return (
+      <div className="flex flex-col gap-6 animate-pulse" aria-busy="true" aria-label="Memuat profil">
+        {/* Avatar card */}
+        <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm flex flex-col items-center gap-4">
+          <div className="h-20 w-20 rounded-full bg-surface-container-high" />
+          <div className="h-6 w-24 rounded-full bg-surface-container-high" />
+        </div>
+        {/* Nickname card */}
+        <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm flex flex-col gap-3">
+          <div className="h-3 w-36 rounded-full bg-surface-container-high" />
+          <div className="h-6 w-48 rounded-full bg-surface-container-high" />
+        </div>
+        {/* Info block */}
+        <div className="h-20 rounded-lg bg-surface-container-high" />
+      </div>
+    );
   }
+
 
   const handleCycleAvatar = async () => {
     const seed = nextAvatarSeed(profile.avatarSeed);

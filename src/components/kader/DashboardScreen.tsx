@@ -102,8 +102,46 @@ export function DashboardScreen() {
   }
 
   if (!dashboard) {
-    return <p className="text-body-md text-on-surface-variant">Memuat dashboard...</p>;
+    return (
+      <div className="flex flex-col gap-6 font-sans animate-pulse" aria-busy="true" aria-label="Memuat dashboard">
+        {/* Greeting */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <div className="h-7 w-56 rounded-full bg-surface-container-high" />
+            <div className="h-4 w-40 rounded-full bg-surface-container-high" />
+          </div>
+          {/* StatusToggle placeholder */}
+          <div className="h-11 w-full rounded-xl bg-surface-container-high" />
+        </div>
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 gap-4">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex items-center gap-3.5 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+              <div className="h-12 w-12 shrink-0 rounded-full bg-surface-container-high" />
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="h-6 w-8 rounded-full bg-surface-container-high" />
+                <div className="h-3 w-24 rounded-full bg-surface-container-high" />
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Session card skeletons */}
+        <div className="flex flex-col gap-4">
+          <div className="h-5 w-40 rounded-full bg-surface-container-high" />
+          {[0, 1].map((i) => (
+            <div key={i} className="flex items-center gap-3 rounded-2xl border border-outline-variant border-r-4 border-r-surface-container-high bg-surface-container-lowest p-sm">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-surface-container-high" />
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="h-4 w-32 rounded-full bg-surface-container-high" />
+                <div className="h-3 w-20 rounded-full bg-surface-container-high" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
+
 
   return (
     <div className="flex flex-col gap-6 font-sans">

@@ -198,11 +198,21 @@ export function VerifikasiScreen() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-on-surface-variant">
-                    Memuat daftar profil...
-                  </td>
-                </tr>
+                <>
+                  {[0, 1, 2, 3, 4].map((row) => (
+                    <tr key={row} className="animate-pulse border-b border-outline-variant">
+                      <td className="px-4 py-3"><div className="h-3 w-28 rounded-full bg-surface-container-high" /></td>
+                      <td className="px-4 py-3"><div className="h-3 w-20 rounded-full bg-surface-container-high" /></td>
+                      <td className="px-4 py-3"><div className="h-5 w-16 rounded-full bg-surface-container-high" /></td>
+                      <td className="px-4 py-3"><div className="h-3 w-24 rounded-full bg-surface-container-high" /></td>
+                      <td className="px-4 py-3 flex gap-2 justify-end">
+                        <div className="h-8 w-20 rounded-md bg-surface-container-high" />
+                        <div className="h-8 w-16 rounded-md bg-surface-container-high" />
+                      </td>
+                    </tr>
+                  ))}
+                </>
+
               ) : !result || result.items.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-on-surface-variant">

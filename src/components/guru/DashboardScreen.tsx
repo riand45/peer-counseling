@@ -27,8 +27,32 @@ export function DashboardScreen() {
   }
 
   if (!dashboard) {
-    return <p className="text-body-md text-on-surface-variant">Memuat dashboard...</p>;
+    return (
+      <div className="flex flex-col gap-6 animate-pulse" aria-busy="true" aria-label="Memuat dashboard">
+        {/* Title */}
+        <div className="flex flex-col gap-2">
+          <div className="h-7 w-52 rounded-full bg-surface-container-high" />
+          <div className="h-4 w-72 rounded-full bg-surface-container-high" />
+        </div>
+        {/* 4 stat cards */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex flex-col gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+              <div className="h-8 w-8 rounded-full bg-surface-container-high" />
+              <div className="h-7 w-12 rounded-full bg-surface-container-high" />
+              <div className="h-3 w-28 rounded-full bg-surface-container-high" />
+            </div>
+          ))}
+        </div>
+        {/* Two panels */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,360px)_1fr]">
+          <div className="h-48 rounded-2xl bg-surface-container-high" />
+          <div className="h-48 rounded-2xl bg-surface-container-high" />
+        </div>
+      </div>
+    );
   }
+
 
   return (
     <div className="flex flex-col gap-6">

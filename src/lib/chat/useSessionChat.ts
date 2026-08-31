@@ -23,6 +23,7 @@ function mergeById(incoming: ChatMessage[], current: ChatMessage[]): ChatMessage
 export function useSessionChat(sessionId: string, studentLocalId?: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [typingFrom, setTypingFrom] = useState<string | null>(null);
   const supabaseRef = useRef(createClient());
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -30,6 +31,7 @@ export function useSessionChat(sessionId: string, studentLocalId?: string) {
   useEffect(() => {
     let active = true;
     const supabase = supabaseRef.current;
+    setLoading(true);
 
     getSessionMessages({ sessionId, studentLocalId })
       .then((history) => {
@@ -37,6 +39,9 @@ export function useSessionChat(sessionId: string, studentLocalId?: string) {
       })
       .catch((err) => {
         if (active) setError(err instanceof Error ? err.message : "Gagal memuat pesan");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
 
     const channel = supabase
@@ -78,5 +83,5 @@ export function useSessionChat(sessionId: string, studentLocalId?: string) {
     [sessionId],
   );
 
-  return { messages, error, typingFrom, send, notifyTyping };
+  return { messages, error, loading, typingFrom, send, notifyTyping };
 }

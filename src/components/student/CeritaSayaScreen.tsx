@@ -36,8 +36,22 @@ export function CeritaSayaScreen() {
   }
 
   if (!sessions) {
-    return <p className="text-body-md text-on-surface-variant">Memuat riwayat cerita...</p>;
+    return (
+      <div className="flex flex-col gap-4 animate-pulse" aria-busy="true" aria-label="Memuat riwayat cerita">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex items-center gap-3 rounded-2xl border border-outline-variant border-r-4 border-r-surface-container-high bg-surface-container-lowest p-sm">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-surface-container-high" />
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="h-4 w-40 rounded-full bg-surface-container-high" />
+              <div className="h-3 w-28 rounded-full bg-surface-container-high" />
+            </div>
+            <div className="h-3 w-10 rounded-full bg-surface-container-high shrink-0" />
+          </div>
+        ))}
+      </div>
+    );
   }
+
 
   const filtered = search.trim()
     ? sessions.filter((s) => (s.kaderName ?? "").toLowerCase().includes(search.trim().toLowerCase()))

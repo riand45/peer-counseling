@@ -122,10 +122,36 @@ export function ConsultationListScreen() {
       )}
 
       {!result && !error ? (
-        <p className="text-body-md text-on-surface-variant">Memuat daftar konsultasi...</p>
+        <div className="overflow-x-auto animate-pulse" aria-busy="true" aria-label="Memuat daftar konsultasi">
+          <table className="w-full min-w-[760px] text-left text-body-md">
+            <thead>
+              <tr className="border-b border-outline-variant">
+                {["ID", "Siswa", "Topik", "Kader", "Status", "Tanggal", "Aksi"].map((col) => (
+                  <th key={col} className="py-2 pr-3">
+                    <div className="h-3 w-16 rounded-full bg-surface-container-high" />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[0, 1, 2, 3, 4].map((row) => (
+                <tr key={row} className="border-b border-outline-variant">
+                  <td className="py-3 pr-3"><div className="h-3 w-14 rounded-full bg-surface-container-high" /></td>
+                  <td className="py-3 pr-3"><div className="h-3 w-24 rounded-full bg-surface-container-high" /></td>
+                  <td className="py-3 pr-3"><div className="h-3 w-20 rounded-full bg-surface-container-high" /></td>
+                  <td className="py-3 pr-3"><div className="h-3 w-24 rounded-full bg-surface-container-high" /></td>
+                  <td className="py-3 pr-3"><div className="h-5 w-16 rounded-full bg-surface-container-high" /></td>
+                  <td className="py-3 pr-3"><div className="h-3 w-20 rounded-full bg-surface-container-high" /></td>
+                  <td className="py-3 pr-3"><div className="h-8 w-16 rounded-md bg-surface-container-high" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         result && <ConsultationTable result={result} onPageChange={setPage} />
       )}
+
     </div>
   );
 }

@@ -135,7 +135,21 @@ export default function PilihKaderPage() {
         ))}
       </div>
 
-      {loading && <p className="text-body-md text-on-surface-variant">Memuat daftar kader...</p>}
+      {loading && (
+        <div className="flex flex-col gap-4 animate-pulse" aria-busy="true" aria-label="Memuat daftar kader">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-surface-container-high" />
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="h-4 w-32 rounded-full bg-surface-container-high" />
+                <div className="h-3 w-20 rounded-full bg-surface-container-high" />
+              </div>
+              <div className="h-8 w-16 rounded-lg bg-surface-container-high shrink-0" />
+            </div>
+          ))}
+        </div>
+      )}
+
       {error && (
         <p className="rounded-md border-l-4 border-error bg-error-container px-3 py-2 text-label-md text-on-error-container">
           {error}
