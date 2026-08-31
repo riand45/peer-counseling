@@ -3,11 +3,6 @@
 import { useId, useState } from "react";
 import { cn } from "@/lib/cn";
 
-const inputClasses = [
-  "w-full rounded-xl border-2 border-transparent bg-surface-container-low pl-4 pr-12 py-3",
-  "text-body-md text-on-surface outline-none transition-all placeholder:text-on-surface-variant/60",
-  "focus:border-primary focus:bg-surface-container-lowest focus:shadow-[0_0_0_4px_rgba(0,93,167,0.12)]",
-].join(" ");
 
 function EyeIcon() {
   return (
@@ -33,6 +28,7 @@ type AuthPasswordFieldProps = {
   required?: boolean;
   minLength?: number;
   hint?: string;
+  accent?: "primary" | "tertiary";
 };
 
 export function AuthPasswordField({
@@ -41,9 +37,15 @@ export function AuthPasswordField({
   required,
   minLength,
   hint,
+  accent = "primary",
 }: AuthPasswordFieldProps) {
   const [visible, setVisible] = useState(false);
   const id = useId();
+
+  const focusClasses =
+    accent === "tertiary"
+      ? "focus:border-tertiary focus:shadow-[0_0_0_4px_rgba(0,104,116,0.15)]"
+      : "focus:border-primary focus:shadow-[0_0_0_4px_rgba(0,93,167,0.12)]";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -58,14 +60,19 @@ export function AuthPasswordField({
           required={required}
           minLength={minLength}
           placeholder="••••••••"
-          className={cn(inputClasses)}
+          className={cn(
+            "w-full rounded-xl border-2 border-transparent bg-surface-container-low pl-4 pr-12 py-3",
+            "text-body-md text-on-surface outline-none transition-all placeholder:text-on-surface-variant/60",
+            "focus:bg-surface-container-lowest",
+            focusClasses,
+          )}
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Sembunyikan password" : "Tampilkan password"}
           aria-pressed={visible}
-          className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-highest"
+          className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           {visible ? <EyeOffIcon /> : <EyeIcon />}
         </button>

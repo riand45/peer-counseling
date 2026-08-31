@@ -4,7 +4,7 @@ import { AuthLayout } from "./AuthLayout";
 import { AuthCard } from "./AuthCard";
 import { AuthInput } from "./AuthInput";
 import { AuthPasswordField } from "./AuthPasswordField";
-import { Button } from "@/components/ui/Button";
+import { AuthSubmitButton } from "./AuthSubmitButton";
 
 type FormAction = (formData: FormData) => void | Promise<void>;
 
@@ -32,6 +32,15 @@ const EmailIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect width="20" height="16" x="2" y="4" rx="2" />
     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+);
+
+const UserPlusIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <line x1="19" x2="19" y1="8" y2="14" />
+    <line x1="22" x2="16" y1="11" y2="11" />
   </svg>
 );
 
@@ -65,6 +74,7 @@ export function RegisterPage({
             required
             autoComplete="name"
             placeholder="Nama lengkap Anda"
+            accent={accent}
             icon={<UserIcon />}
           />
 
@@ -75,6 +85,7 @@ export function RegisterPage({
             required
             autoComplete="email"
             placeholder="nama@email.com"
+            accent={accent}
             icon={<EmailIcon />}
           />
 
@@ -83,16 +94,18 @@ export function RegisterPage({
             required
             minLength={6}
             hint="Minimal 6 karakter"
+            accent={accent}
           />
 
           <div className="mt-2">
-            <Button
-              type="submit"
+            <AuthSubmitButton
               id={`${role}-signup-btn`}
-              className="w-full rounded-xl py-3 text-base font-semibold shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98]"
+              accent={accent}
+              loadingText="Sedang mendaftar..."
+              icon={<UserPlusIcon />}
             >
               Daftar
-            </Button>
+            </AuthSubmitButton>
           </div>
         </form>
 
