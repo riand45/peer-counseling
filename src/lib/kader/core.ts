@@ -27,7 +27,7 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
     .from("sessions")
     .select("id, topics, student_local_id, last_message_at, status, started_at")
     .eq("assigned_to", user.id)
-    .in("status", ["active", "waiting"])
+    .in("status", ["active", "waiting", "ended", "escalated"])
     .order("last_message_at", { ascending: false, nullsFirst: false });
 
   if (sessionsError) {
@@ -73,6 +73,9 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
 
   const activeSessionRows = sessionRows.filter((row) => row.status === "active");
   const waitingSessionRows = sessionRows.filter((row) => row.status === "waiting");
+  const historySessionRows = sessionRows.filter(
+    (row) => row.status === "ended" || row.status === "escalated"
+  );
 
   const activeSessions: KaderDashboardSession[] = activeSessionRows.map((row) => {
     const identity = identityById.get(row.student_local_id as string);
@@ -83,6 +86,7 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
       studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
       lastMessagePreview: latest?.body ?? null,
       lastMessageAt: (row.last_message_at as string | null) ?? latest?.created_at ?? null,
+      status: row.status as SessionStatus,
     };
   });
 
@@ -95,11 +99,25 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
     };
   });
 
+  const historySessions: KaderDashboardSession[] = historySessionRows.map((row) => {
+    const identity = identityById.get(row.student_local_id as string);
+    const latest = latestMessageBySession.get(row.id as string);
+    return {
+      id: row.id as string,
+      topics: (row.topics as Topic[]) ?? [],
+      studentDisplayName: getStudentDisplayName(identity?.nickname, identity?.avatar_seed),
+      lastMessagePreview: latest?.body ?? null,
+      lastMessageAt: (row.last_message_at as string | null) ?? latest?.created_at ?? null,
+      status: row.status as SessionStatus,
+    };
+  });
+
   return {
     fullName: (profile.full_name as string | null) ?? "Kader",
     status: profile.status as KaderDashboard["status"],
     activeSessions,
     waitingSessions,
+    historySessions,
   };
 }
 

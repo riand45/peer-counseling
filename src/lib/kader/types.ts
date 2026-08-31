@@ -6,6 +6,7 @@ export type KaderDashboardSession = {
   studentDisplayName: string;
   lastMessagePreview: string | null;
   lastMessageAt: string | null;
+  status?: SessionStatus;
 };
 
 export type KaderDashboardWaitingSession = {
@@ -19,6 +20,7 @@ export type KaderDashboard = {
   status: KaderStatus;
   activeSessions: KaderDashboardSession[];
   waitingSessions: KaderDashboardWaitingSession[];
+  historySessions: KaderDashboardSession[];
 };
 
 export type SessionStatus = "waiting" | "active" | "escalated" | "ended";
