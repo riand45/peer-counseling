@@ -8,5 +8,5 @@ type RoleShellProps = {
 };
 
 export function GuruShell(props: RoleShellProps) {
-  return <AppShell title="Area Guru BK" {...props} />;
+  return <AppShell title="Area Guru" {...props} />;
 }

@@ -40,8 +40,8 @@ export default async function KaderLayout({ children }: { children: React.ReactN
         <div className="w-full max-w-[28rem] rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center">
           <h1 className="text-headline-md font-bold text-on-surface">Menunggu verifikasi</h1>
           <p className="mt-2 text-body-md text-on-surface-variant">
-            Akun konselor Anda belum diverifikasi oleh Guru BK. Silakan tunggu
-            atau hubungi Guru BK di sekolah Anda.
+            Akun konselor Anda belum diverifikasi oleh Guru. Silakan tunggu
+            atau hubungi Guru di sekolah Anda.
           </p>
           <form action={signout} className="mt-4">
             <Button type="submit" variant="ghost" className="w-full">

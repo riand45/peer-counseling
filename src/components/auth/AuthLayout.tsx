@@ -23,7 +23,7 @@ const accentConfig: Record<
     panelGrad: "from-[hsl(210,40%,10%)] via-[hsl(220,35%,14%)] to-[hsl(230,30%,11%)]",
     blob1: "bg-tertiary/25",
     blob2: "bg-primary/15",
-    tag: "Area Guru BK",
+    tag: "Area Guru",
   },
 };
 

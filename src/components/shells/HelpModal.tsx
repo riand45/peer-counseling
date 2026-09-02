@@ -22,12 +22,12 @@ const FAQ_ITEMS = [
   {
     question: "Siapakah para konselor sebaya di Ruang Cerita?",
     answer:
-      "Konselor sebaya adalah teman-teman sebaya terlatih yang telah dibekali keterampilan mendengarkan aktif dan empati di bawah bimbingan Guru Bimbingan Konseling (BK) sekolah.",
+      "Konselor sebaya adalah teman-teman sebaya terlatih yang telah dibekali keterampilan mendengarkan aktif dan empati di bawah bimbingan Guru Bimbingan Konseling sekolah.",
   },
   {
     question: "Kapan saya harus menghubungi bantuan profesional/darurat?",
     answer:
-      "Jika kamu atau temanmu berada dalam situasi bahaya langsung, menyakiti diri, atau ancaman kekerasan, harap segera temui Guru BK di sekolah atau hubungi hotline darurat kesehatan mental terdekat.",
+      "Jika kamu atau temanmu berada dalam situasi bahaya langsung, menyakiti diri, atau ancaman kekerasan, harap segera temui Guru di sekolah atau hubungi hotline darurat kesehatan mental terdekat.",
   },
 ];
 
@@ -82,7 +82,7 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
             <div>
               <p className="text-label-sm font-bold text-error">Butuh Bantuan Mendesak?</p>
               <p className="text-body-xs text-on-error-container mt-0.5 leading-relaxed">
-                Hubungi Hotline Kesehatan Mental Kemenkes <strong>119 ext 8</strong> atau hubungi Guru BK di sekolahmu.
+                Hubungi Hotline Kesehatan Mental Kemenkes <strong>119 ext 8</strong> atau hubungi Guru di sekolahmu.
               </p>
             </div>
           </div>

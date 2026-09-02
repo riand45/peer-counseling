@@ -60,7 +60,7 @@ export default async function GuruLayout({ children }: { children: React.ReactNo
         <div className="w-full max-w-[28rem] rounded-lg border border-outline-variant bg-surface-container-lowest p-md text-center">
           <h1 className="text-headline-md font-bold text-on-surface">Menunggu verifikasi</h1>
           <p className="mt-2 text-body-md text-on-surface-variant">
-            Akun Guru BK Anda belum diverifikasi. Hubungi admin sekolah atau
+            Akun Guru Anda belum diverifikasi. Hubungi admin sekolah atau
             pengelola aplikasi untuk verifikasi.
           </p>
           <form action={signout} className="mt-6">

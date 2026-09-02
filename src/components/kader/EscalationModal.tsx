@@ -44,7 +44,7 @@ export function EscalationModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title="Hubungi Guru/BK"
+      title="Hubungi Guru"
       description="Gunakan fitur ini jika kamu merasa kasus ini membutuhkan bantuan profesional dari guru atau konselor sekolah. Privasi tetap dijaga."
       footer={
         <>
@@ -52,7 +52,7 @@ export function EscalationModal({
             Batal
           </Button>
           <Button onClick={handleSubmit} disabled={sending}>
-            {sending ? "Mengirim..." : "Kirim ke Guru/BK"}
+            {sending ? "Mengirim..." : "Kirim ke Guru"}
           </Button>
         </>
       }

@@ -91,7 +91,7 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
 
   function handleEscalated() {
     setEscalationOpen(false);
-    setEscalationNotice("Eskalasi terkirim ke Guru/BK.");
+    setEscalationNotice("Eskalasi terkirim ke Guru.");
     getSessionStudentInfo({ sessionId })
       .then(setStudentInfo)
       .catch(() => {
@@ -186,7 +186,7 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
                     disabled={studentInfo?.status === "ended" || studentInfo?.status === "escalated"}
                     className="flex w-full px-4 py-2 text-left text-body-md text-on-surface hover:bg-surface-container-low disabled:opacity-50"
                   >
-                    🚩 Hubungi Guru/BK
+                    🚩 Hubungi Guru
                   </button>
                 </div>
               </>
@@ -196,7 +196,7 @@ export function ChatScreen({ sessionId }: { sessionId: string }) {
       </header>
 
       <div className="border-b border-outline-variant bg-secondary-container px-sm py-2 text-label-sm text-on-secondary-container">
-        ℹ️ Sesi ini dipantau oleh guru/BK demi keamanan.
+        ℹ️ Sesi ini dipantau oleh guru demi keamanan.
       </div>
 
       {escalationNotice && (

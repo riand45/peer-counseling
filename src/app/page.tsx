@@ -25,7 +25,7 @@ export default function LandingPage() {
           </h1>
           
           <p className="mt-3.5 text-md md:text-lg text-slate-700 font-medium leading-relaxed">
-            Safe space untuk bercerita secara anonim, didengar oleh konselor sebaya, dan didampingi guru BK.
+            Safe space untuk bercerita secara anonim, didengar oleh konselor sebaya, dan didampingi guru.
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Guru BK</h2>
+                <h2 className="text-xl font-bold text-slate-800">Guru</h2>
                 <p className="mt-2 text-sm text-slate-600 leading-relaxed">
                   Masuk sebagai guru bimbingan konseling untuk memantau, mengawasi, dan mendampingi siswa.
                 </p>
@@ -93,7 +93,7 @@ export default function LandingPage() {
             </div>
             <Link href="/guru/login" className="w-full mt-2">
               <Button variant="ghost" className="w-full rounded-xl py-3 border border-slate-200 hover:border-amber-200 hover:bg-amber-50/50 hover:text-amber-700 text-slate-700 font-semibold shadow-sm transition-all duration-300 cursor-pointer">
-                Masuk Guru BK
+                Masuk Guru
               </Button>
             </Link>
           </div>

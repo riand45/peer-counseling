@@ -198,7 +198,7 @@ export function NotificationModal({
         id: "kader-guideline-sop",
         category: "info",
         title: "Pedoman Pendampingan Sebaya",
-        description: "Gunakan pendekatan empatik dan segera eskalasikan ke Guru BK jika terindikasi situasi krisis.",
+        description: "Gunakan pendekatan empatik dan segera eskalasikan ke Guru jika terindikasi situasi krisis.",
         timestamp: "Sistem",
         iconType: "tip",
       });

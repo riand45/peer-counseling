@@ -58,7 +58,7 @@ export function DashboardScreen() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-lg">
-          Dashboard Guru/BK
+          Dashboard Guru
         </h1>
         <p className="mt-1 text-body-md text-on-surface-variant">
           Selamat datang, Pak/Bu {dashboard.fullName}. Berikut ringkasan hari ini.

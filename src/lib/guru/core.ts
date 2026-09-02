@@ -221,7 +221,7 @@ export async function getGuruDashboardCore(supabase: SupabaseClient): Promise<Gu
   });
 
   return {
-    fullName: (profile.full_name as string | null) ?? "Guru BK",
+    fullName: (profile.full_name as string | null) ?? "Guru",
     counts,
     attention,
     activity,

@@ -31,7 +31,7 @@ export default async function GuruProfilPage() {
 
   const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
 
-  const fullName = (profile?.full_name as string | null) ?? "Guru BK";
+  const fullName = (profile?.full_name as string | null) ?? "Guru";
   const initial = fullName.trim().charAt(0).toUpperCase() || "G";
   const colorIdx = pickColorIndex(fullName.trim() || "G");
   const color = AVATAR_COLORS[colorIdx];
@@ -61,7 +61,7 @@ export default async function GuruProfilPage() {
 
           <span className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-label-sm font-semibold bg-primary-fixed-dim text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            Guru BK
+            Guru
           </span>
         </div>
       </div>

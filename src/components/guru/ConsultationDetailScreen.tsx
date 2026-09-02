@@ -200,7 +200,7 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
     <div className="flex flex-col gap-4">
       {!detail.hasTakenOver && (
         <div className="rounded-md bg-secondary-container px-4 py-3 text-label-md text-on-secondary-container">
-          👁️ Mode Pantau: Guru/BK dapat melihat seluruh isi percakapan.
+          👁️ Mode Pantau: Guru dapat melihat seluruh isi percakapan.
         </div>
       )}
 
@@ -249,7 +249,7 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
           </Card>
 
           <Card className="flex flex-col gap-3">
-            <h2 className="text-headline-md text-on-surface">Tindakan Guru/BK</h2>
+            <h2 className="text-headline-md text-on-surface">Tindakan Guru</h2>
             {!detail.hasTakenOver && detail.status !== "ended" && !detail.archivedAt && (
               <Button onClick={() => setConfirmingTakeOver(true)}>✋ Ambil Alih Percakapan</Button>
             )}

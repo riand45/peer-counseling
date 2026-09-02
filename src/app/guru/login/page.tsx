@@ -20,7 +20,7 @@ export default async function GuruLoginPage({
   return (
     <LoginPage
       role="guru"
-      title="Masuk sebagai Guru BK"
+      title="Masuk sebagai Guru"
       subtitle="Pantau dan dampingi konsultasi siswa."
       accent="tertiary"
       icon={<GuruIcon />}
