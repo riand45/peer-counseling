@@ -7,7 +7,7 @@ import type { ProfileListItem, ProfileListResult, ProfileRole } from "@/lib/guru
 
 const ROLE_TABS: { value: ProfileRole | "all"; label: string }[] = [
   { value: "all", label: "Semua" },
-  { value: "kader", label: "Kader" },
+  { value: "kader", label: "Konselor" },
   { value: "guru", label: "Guru BK" },
 ];
 
@@ -42,7 +42,7 @@ function RoleBadge({ role }: { role: ProfileRole }) {
           : "bg-[color-mix(in_srgb,var(--color-secondary)_12%,transparent)] text-secondary",
       )}
     >
-      {role === "guru" ? "Guru BK" : "Kader"}
+      {role === "guru" ? "Guru BK" : "Konselor"}
     </span>
   );
 }
@@ -143,7 +143,7 @@ export function VerifikasiScreen() {
           Verifikasi Profil
         </h1>
         <p className="mt-1 text-body-md text-on-surface-variant">
-          Kelola dan verifikasi akun kader maupun guru BK yang mendaftar.
+          Kelola dan verifikasi akun konselor maupun guru BK yang mendaftar.
         </p>
       </div>
 

@@ -57,7 +57,7 @@ async function resolveKaderNames(
     .select("id, full_name")
     .in("id", kaderIds);
   for (const row of kaderProfiles ?? []) {
-    kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Kader");
+    kaderNameById.set(row.id as string, (row.full_name as string | null) ?? "Konselor");
   }
   return kaderNameById;
 }

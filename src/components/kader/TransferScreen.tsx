@@ -24,7 +24,7 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
         setStudentName(info.displayName);
         setCandidates(list);
       })
-      .catch((err) => setLoadError(err instanceof Error ? err.message : "Gagal memuat daftar kader"))
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Gagal memuat daftar konselor"))
       .finally(() => setLoading(false));
   }, [sessionId]);
 
@@ -61,7 +61,7 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
           Alihkan Konsultasi
         </h1>
         <p className="mt-1 text-body-md text-on-surface-variant">
-          Pilih Kader yang tersedia untuk mengambil alih sesi konsultasi {studentName ?? "siswa ini"}.
+          Pilih Konselor yang tersedia untuk mengambil alih sesi konsultasi {studentName ?? "siswa ini"}.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
       )}
 
       {loading && (
-        <div className="flex flex-col gap-3 animate-pulse" aria-busy="true" aria-label="Memuat daftar kader">
+        <div className="flex flex-col gap-3 animate-pulse" aria-busy="true" aria-label="Memuat daftar konselor">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex items-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm">
               <div className="h-10 w-10 shrink-0 rounded-full bg-surface-container-high" />
@@ -88,7 +88,7 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
 
       {!loading && !loadError && candidates.length === 0 && (
         <p className="text-body-md text-on-surface-variant">
-          Tidak ada kader lain yang sedang tersedia saat ini.
+          Tidak ada konselor lain yang sedang tersedia saat ini.
         </p>
       )}
 

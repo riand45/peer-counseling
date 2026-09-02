@@ -20,7 +20,7 @@ export default async function KaderDaftarPage({
   return (
     <RegisterPage
       role="kader"
-      title="Daftar sebagai Kader"
+      title="Daftar sebagai Konselor"
       subtitle="Bergabung sebagai pendamping sebaya untuk membantu teman."
       accent="primary"
       icon={<KaderIcon />}

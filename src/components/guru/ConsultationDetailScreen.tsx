@@ -223,7 +223,7 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
               <p className="mt-1 font-semibold text-on-surface">{detail.studentDisplayName}</p>
             </div>
             <div>
-              <p className="text-label-sm uppercase text-on-surface-variant">Kader Sebaya</p>
+              <p className="text-label-sm uppercase text-on-surface-variant">Konselor Sebaya</p>
               <p className="mt-1 font-semibold text-on-surface">
                 {detail.assignedKaderName ?? "- Belum Ditugaskan -"}
               </p>
@@ -348,7 +348,7 @@ export function ConsultationDetailScreen({ sessionId }: { sessionId: string }) {
         open={confirmingTakeOver}
         onClose={() => setConfirmingTakeOver(false)}
         title="Ambil alih percakapan?"
-        description="Sesi ini akan dipindahkan dari kader sebaya ke Anda. Kader sebelumnya tidak akan lagi melihat sesi ini sebagai konsultasi aktifnya."
+        description="Sesi ini akan dipindahkan dari konselor sebaya ke Anda. Konselor sebelumnya tidak akan lagi melihat sesi ini sebagai konsultasi aktifnya."
         footer={
           <>
             <Button variant="ghost" onClick={() => setConfirmingTakeOver(false)} disabled={takingOver}>

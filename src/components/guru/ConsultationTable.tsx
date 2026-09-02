@@ -47,7 +47,7 @@ export function ConsultationTable({
               <th className="py-2 pr-3 font-medium">ID Sesi</th>
               <th className="py-2 pr-3 font-medium">Siswa (Anonim)</th>
               <th className="py-2 pr-3 font-medium">Topik</th>
-              <th className="py-2 pr-3 font-medium">Kader Bertugas</th>
+              <th className="py-2 pr-3 font-medium">Konselor Bertugas</th>
               <th className="py-2 pr-3 font-medium">Status</th>
               <th className="py-2 pr-3 font-medium">Tanggal</th>
               <th className="py-2 pr-3 font-medium">Aksi</th>

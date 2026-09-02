@@ -74,7 +74,7 @@ export function CeritaSayaScreen() {
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Cari nama Kader..."
+        placeholder="Cari nama Konselor..."
         aria-label="Cari percakapan"
         className="rounded-md border-2 border-transparent bg-surface-container-low px-3 py-2.5 text-body-md text-on-surface outline-none transition-colors focus:border-primary focus:bg-surface-container-lowest"
       />

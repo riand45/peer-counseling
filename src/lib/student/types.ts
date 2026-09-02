@@ -85,7 +85,7 @@ export type ReportReason = "uncomfortable" | "unresponsive" | "need_teacher" | "
 
 export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
   uncomfortable: "Saya merasa tidak nyaman",
-  unresponsive: "Kader tidak merespons",
+  unresponsive: "Konselor tidak merespons",
   need_teacher: "Saya ingin bantuan guru/BK",
   other: "Lainnya",
 };

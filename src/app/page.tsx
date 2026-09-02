@@ -63,7 +63,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Kader Sebaya</h2>
+                <h2 className="text-xl font-bold text-slate-800">Konselor Sebaya</h2>
                 <p className="mt-2 text-sm text-slate-600 leading-relaxed">
                   Masuk sebagai konselor sebaya untuk mendampingi dan mendengarkan keluh kesah siswa.
                 </p>
@@ -71,7 +71,7 @@ export default function LandingPage() {
             </div>
             <Link href="/kader/login" className="w-full mt-2">
               <Button variant="ghost" className="w-full rounded-xl py-3 border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50/50 hover:text-emerald-700 text-slate-700 font-semibold shadow-sm transition-all duration-300 cursor-pointer">
-                Masuk Kader
+                Masuk Konselor
               </Button>
             </Link>
           </div>

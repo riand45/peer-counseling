@@ -68,7 +68,7 @@ export default function PilihKaderPage() {
     }
     listAvailableKader()
       .then(setKaderList)
-      .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat daftar kader"))
+      .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat daftar konselor"))
       .finally(() => setLoading(false));
   }, [selectedTopics, router]);
 
@@ -130,7 +130,7 @@ export default function PilihKaderPage() {
       </div>
 
       {loading && (
-        <div className="flex flex-col gap-4 animate-pulse" aria-busy="true" aria-label="Memuat daftar kader">
+        <div className="flex flex-col gap-4 animate-pulse" aria-busy="true" aria-label="Memuat daftar konselor">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex items-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-sm">
               <div className="h-10 w-10 shrink-0 rounded-full bg-surface-container-high" />
@@ -156,7 +156,7 @@ export default function PilihKaderPage() {
         ))}
         {!loading && !error && filteredKader.length === 0 && (
           <p className="text-body-md text-on-surface-variant">
-            Belum ada kader yang tersedia untuk topik ini.
+            Belum ada konselor yang tersedia untuk topik ini.
           </p>
         )}
       </div>

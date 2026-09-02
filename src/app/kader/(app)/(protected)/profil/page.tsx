@@ -24,7 +24,7 @@ export default async function KaderProfilPage() {
     .eq("id", user.id)
     .single();
 
-  const fullName = (profile?.full_name as string | null) ?? "Kader";
+  const fullName = (profile?.full_name as string | null) ?? "Konselor";
   const status = (profile?.status as KaderStatus | null) ?? "offline";
   const bio = (profile?.bio as string | null) ?? null;
   const topics = (profile?.topics as Topic[] | null) ?? [];

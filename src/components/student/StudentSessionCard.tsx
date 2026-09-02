@@ -26,7 +26,7 @@ export function StudentSessionCard({ session }: { session: StudentSessionSummary
           <div className="flex items-center gap-3">
             <StudentEmojiAvatar avatarSeed={session.kaderAvatarSeed} size="md" />
             <div>
-              <p className="text-label-md font-semibold text-on-surface">{session.kaderName ?? "Kader"}</p>
+              <p className="text-label-md font-semibold text-on-surface">{session.kaderName ?? "Konselor"}</p>
               {primaryTopic && (
                 <Chip tone="secondary" className="mt-1">
                   {TOPIC_EMOJI[primaryTopic]} {TOPIC_LABELS[primaryTopic]}

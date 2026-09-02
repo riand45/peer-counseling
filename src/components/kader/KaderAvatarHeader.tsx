@@ -69,7 +69,7 @@ export function KaderAvatarHeader({
             disabled={pending}
             title="Klik untuk ganti avatar"
             className="flex h-24 w-24 items-center justify-center rounded-full bg-secondary-fixed ring-4 ring-surface-container-lowest shadow-md text-5xl transition-transform active:scale-95 hover:scale-105 select-none cursor-pointer disabled:opacity-75"
-            aria-label="Ganti Avatar Kader"
+            aria-label="Ganti Avatar Konselor"
           >
             {emoji}
           </button>
@@ -154,7 +154,7 @@ export function KaderAvatarHeader({
           </div>
           <div className="py-3 px-4 flex flex-col items-center gap-0.5">
             <span className="text-headline-md font-bold text-emerald-600">✓</span>
-            <span className="text-label-sm text-on-surface-variant font-medium">Kader Terverifikasi</span>
+            <span className="text-label-sm text-on-surface-variant font-medium">Konselor Terverifikasi</span>
           </div>
         </div>
       </div>

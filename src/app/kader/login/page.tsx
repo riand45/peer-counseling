@@ -20,7 +20,7 @@ export default async function KaderLoginPage({
   return (
     <LoginPage
       role="kader"
-      title="Masuk sebagai Kader"
+      title="Masuk sebagai Konselor"
       subtitle="Pendamping sebaya yang mendampingi teman-temannya."
       accent="primary"
       icon={<KaderIcon />}

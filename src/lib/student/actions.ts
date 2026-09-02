@@ -58,12 +58,12 @@ export async function listAvailableKader(): Promise<KaderSummary[]> {
 
   if (error) {
     console.error("listAvailableKader failed:", error);
-    throw new Error("Gagal memuat daftar kader");
+    throw new Error("Gagal memuat daftar konselor");
   }
 
   return (data ?? []).map((row) => ({
     id: row.id as string,
-    fullName: (row.full_name as string | null) ?? "Kader",
+    fullName: (row.full_name as string | null) ?? "Konselor",
     bio: row.bio as string | null,
     topics: (row.topics as Topic[] | null) ?? [],
     status: row.status as KaderSummary["status"],
@@ -85,13 +85,13 @@ export async function startSession(input: {
     .single();
 
   if (kaderError || !kader) {
-    throw new Error("Kader tidak ditemukan");
+    throw new Error("Konselor tidak ditemukan");
   }
   if (kader.role !== "kader" || !kader.is_verified) {
-    throw new Error("Kader tidak ditemukan");
+    throw new Error("Konselor tidak ditemukan");
   }
   if (kader.status !== "available") {
-    throw new Error("Kader ini sudah tidak tersedia, silakan pilih kader lain");
+    throw new Error("Konselor ini sudah tidak tersedia, silakan pilih konselor lain");
   }
 
   const { data, error } = await service
@@ -187,7 +187,7 @@ export async function getSessionKader(input: {
   }
 
   return {
-    fullName: kader.full_name ?? "Kader",
+    fullName: kader.full_name ?? "Konselor",
     status: kader.status as KaderStatus,
     avatarSeed: avatarSeed ?? "kucing",
   };
@@ -234,7 +234,7 @@ export async function getStudentSessions(input: {
       .in("id", kaderIds);
     for (const row of kaderProfiles ?? []) {
       kaderInfoById.set(row.id as string, {
-        name: (row.full_name as string | null) ?? "Kader",
+        name: (row.full_name as string | null) ?? "Konselor",
         avatarSeed: avatarByUserId.get(row.id as string) ?? (row as unknown as { avatar_seed?: string }).avatar_seed ?? "kucing",
       });
     }

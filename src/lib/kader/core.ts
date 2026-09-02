@@ -116,7 +116,7 @@ export async function getKaderDashboardCore(supabase: SupabaseClient): Promise<K
   });
 
   return {
-    fullName: (profile.full_name as string | null) ?? "Kader",
+    fullName: (profile.full_name as string | null) ?? "Konselor",
     status: profile.status as KaderDashboard["status"],
     activeSessions,
     waitingSessions,
@@ -289,12 +289,12 @@ export async function getAvailableKaderForTransferCore(
     .order("full_name", { ascending: true });
 
   if (error) {
-    throw new Error("Gagal memuat daftar kader");
+    throw new Error("Gagal memuat daftar konselor");
   }
 
   return (data ?? []).map((row) => ({
     id: row.id as string,
-    fullName: (row.full_name as string | null) ?? "Kader",
+    fullName: (row.full_name as string | null) ?? "Konselor",
     bio: row.bio as string | null,
     topics: (row.topics as Topic[] | null) ?? [],
     status: row.status as KaderStatus,
@@ -330,13 +330,13 @@ export async function transferSessionCore(
     .single();
 
   if (targetError || !target) {
-    throw new Error("Kader tidak ditemukan");
+    throw new Error("Konselor tidak ditemukan");
   }
   if (target.role !== "kader" || !target.is_verified) {
-    throw new Error("Kader tidak ditemukan");
+    throw new Error("Konselor tidak ditemukan");
   }
   if (target.status !== "available") {
-    throw new Error("Kader ini sudah tidak tersedia, silakan pilih kader lain");
+    throw new Error("Konselor ini sudah tidak tersedia, silakan pilih konselor lain");
   }
 
   const { error: rpcError } = await supabase.rpc("transfer_session", {

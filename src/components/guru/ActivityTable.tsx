@@ -27,7 +27,7 @@ export function ActivityTable({ items }: { items: ActivityItem[] }) {
           <tr className="border-b border-outline-variant text-label-sm text-on-surface-variant">
             <th className="py-2 pr-3 font-medium">Anonim</th>
             <th className="py-2 pr-3 font-medium">Topik</th>
-            <th className="py-2 pr-3 font-medium">Kader</th>
+            <th className="py-2 pr-3 font-medium">Konselor</th>
             <th className="py-2 pr-3 font-medium">Status</th>
             <th className="py-2 pr-3 font-medium">Terakhir Aktif</th>
           </tr>
