@@ -21,7 +21,7 @@ export default async function GuruDaftarPage({
     <RegisterPage
       role="guru"
       title="Daftar sebagai Guru"
-      subtitle="Buat akun untuk memantau dan mendampingi konsultasi siswa."
+      subtitle="Buat akun untuk memantau dan mendampingi konsultasi murid."
       accent="tertiary"
       icon={<GuruIcon />}
       iconBg="bg-tertiary text-on-tertiary"

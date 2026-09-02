@@ -76,7 +76,7 @@ export function ConsultationListScreen() {
           Manajemen Konsultasi
         </h1>
         <p className="mt-1 text-body-md text-on-surface-variant">
-          Pantau dan kelola seluruh sesi konsultasi siswa.
+          Pantau dan kelola seluruh sesi konsultasi murid.
         </p>
       </div>
 
@@ -126,7 +126,7 @@ export function ConsultationListScreen() {
           <table className="w-full min-w-[760px] text-left text-body-md">
             <thead>
               <tr className="border-b border-outline-variant">
-                {["ID", "Siswa", "Topik", "Konselor", "Status", "Tanggal", "Aksi"].map((col) => (
+                {["ID", "Murid", "Topik", "Konselor", "Status", "Tanggal", "Aksi"].map((col) => (
                   <th key={col} className="py-2 pr-3">
                     <div className="h-3 w-16 rounded-full bg-surface-container-high" />
                   </th>

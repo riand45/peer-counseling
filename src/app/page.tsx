@@ -41,7 +41,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Siswa</h2>
+                <h2 className="text-xl font-bold text-slate-800">Murid</h2>
                 <p className="mt-2 text-sm text-slate-600 leading-relaxed">
                   Cerita secara anonim, aman, dan rahasia tanpa perlu mendaftar akun.
                 </p>
@@ -65,7 +65,7 @@ export default function LandingPage() {
               <div>
                 <h2 className="text-xl font-bold text-slate-800">Konselor Sebaya</h2>
                 <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-                  Masuk sebagai konselor sebaya untuk mendampingi dan mendengarkan keluh kesah siswa.
+                  Masuk sebagai konselor sebaya untuk mendampingi dan mendengarkan keluh kesah murid.
                 </p>
               </div>
             </div>
@@ -87,7 +87,7 @@ export default function LandingPage() {
               <div>
                 <h2 className="text-xl font-bold text-slate-800">Guru</h2>
                 <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-                  Masuk sebagai guru bimbingan konseling untuk memantau, mengawasi, dan mendampingi siswa.
+                  Masuk sebagai guru bimbingan konseling untuk memantau, mengawasi, dan mendampingi murid.
                 </p>
               </div>
             </div>

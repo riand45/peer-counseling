@@ -15,7 +15,7 @@ export function TopicBarChart({ distribution }: { distribution: TopicDistributio
     <Card className="flex flex-col gap-3">
       <div>
         <h2 className="text-headline-md text-on-surface">Konsultasi Berdasarkan Topik</h2>
-        <p className="text-label-sm text-on-surface-variant">Kategorisasi isu yang dibahas siswa</p>
+        <p className="text-label-sm text-on-surface-variant">Kategorisasi isu yang dibahas murid</p>
       </div>
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">

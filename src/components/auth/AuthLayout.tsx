@@ -87,7 +87,7 @@ export function AuthLayout({ children, accent, blobClass }: AuthLayoutProps) {
             </span>
           </h1>
           <p className="mt-4 text-base leading-relaxed text-white/45">
-            Platform konseling berbasis empati untuk mendukung kesehatan mental siswa secara holistik.
+            Platform konseling berbasis empati untuk mendukung kesehatan mental murid secara holistik.
           </p>
         </div>
 

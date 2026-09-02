@@ -45,7 +45,7 @@ export function ConsultationTable({
           <thead>
             <tr className="border-b border-outline-variant text-label-sm text-on-surface-variant">
               <th className="py-2 pr-3 font-medium">ID Sesi</th>
-              <th className="py-2 pr-3 font-medium">Siswa (Anonim)</th>
+              <th className="py-2 pr-3 font-medium">Murid (Anonim)</th>
               <th className="py-2 pr-3 font-medium">Topik</th>
               <th className="py-2 pr-3 font-medium">Konselor Bertugas</th>
               <th className="py-2 pr-3 font-medium">Status</th>

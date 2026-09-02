@@ -170,7 +170,7 @@ export function NotificationModal({
             id: `kader-request-${s.id}`,
             category: "session",
             title: "Permintaan Sesi Baru",
-            description: `Ada siswa anonim (${s.studentDisplayName}) ingin memulai sesi konseling.`,
+            description: `Ada murid anonim (${s.studentDisplayName}) ingin memulai sesi konseling.`,
             timestamp: formatRelativeTime(s.startedAt),
             href: `/kader`,
             actionText: "Tinjau Permintaan",
@@ -207,7 +207,7 @@ export function NotificationModal({
         id: "guru-welcome",
         category: "info",
         title: "Portal Pengawasan Bimbingan Konseling",
-        description: "Pantau ringkasan tren isu siswa dan eskalasi krisis dari konselor sebaya secara berkala.",
+        description: "Pantau ringkasan tren isu murid dan eskalasi krisis dari konselor sebaya secara berkala.",
         timestamp: "Sistem",
         iconType: "system",
       });

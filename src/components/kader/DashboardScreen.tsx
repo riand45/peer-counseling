@@ -222,7 +222,7 @@ export function DashboardScreen() {
         <h2 className="mb-4 text-headline-md font-bold text-on-surface">Menunggu</h2>
         {dashboard.waitingSessions.length === 0 ? (
           <p className="text-body-md text-on-surface-variant p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant border-dashed text-center">
-            Antrean kosong. Belum ada siswa baru yang menunggu.
+            Antrean kosong. Belum ada murid baru yang menunggu.
           </p>
         ) : (
           <div className="flex flex-col gap-4">

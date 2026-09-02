@@ -27,7 +27,7 @@ function toCsv(stats: GuruStatistics): string {
   lines.push("Ringkasan");
   lines.push("Metrik,Nilai");
   lines.push(`Total Sesi Chat,${stats.totalSessions}`);
-  lines.push(`Siswa Aktif,${stats.activeStudents}`);
+  lines.push(`Murid Aktif,${stats.activeStudents}`);
   lines.push(`Rata-rata Durasi (menit),${stats.avgDurationMinutes ?? ""}`);
   lines.push(`Kasus Eskalasi,${stats.escalationCount}`);
   lines.push("");
@@ -94,7 +94,7 @@ export function StatisticsScreen() {
           <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-lg">
             Statistik & Analitik
           </h1>
-          <p className="mt-1 text-body-md text-on-surface-variant">Ringkasan data konsultasi siswa.</p>
+          <p className="mt-1 text-body-md text-on-surface-variant">Ringkasan data konsultasi murid.</p>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -145,7 +145,7 @@ export function StatisticsScreen() {
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard icon="💬" label="Total Sesi Chat" value={stats.totalSessions} />
-              <StatCard icon="🧑‍🤝‍🧑" label="Siswa Aktif" value={stats.activeStudents} />
+              <StatCard icon="🧑‍🤝‍🧑" label="Murid Aktif" value={stats.activeStudents} />
               <StatCard
                 icon="⏱️"
                 label="Rata-rata Durasi"

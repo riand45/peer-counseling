@@ -9,7 +9,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Ruang Cerita",
-  description: "Peer counseling untuk siswa — aman, anonim, dan didampingi.",
+  description: "Peer counseling untuk murid — aman, anonim, dan didampingi.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

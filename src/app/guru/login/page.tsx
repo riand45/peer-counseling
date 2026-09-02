@@ -21,7 +21,7 @@ export default async function GuruLoginPage({
     <LoginPage
       role="guru"
       title="Masuk sebagai Guru"
-      subtitle="Pantau dan dampingi konsultasi siswa."
+      subtitle="Pantau dan dampingi konsultasi murid."
       accent="tertiary"
       icon={<GuruIcon />}
       iconBg="bg-gradient-to-br from-tertiary to-tertiary/70 text-white shadow-tertiary/30"

@@ -61,7 +61,7 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
           Alihkan Konsultasi
         </h1>
         <p className="mt-1 text-body-md text-on-surface-variant">
-          Pilih Konselor yang tersedia untuk mengambil alih sesi konsultasi {studentName ?? "siswa ini"}.
+          Pilih Konselor yang tersedia untuk mengambil alih sesi konsultasi {studentName ?? "murid ini"}.
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export function TransferScreen({ sessionId }: { sessionId: string }) {
         title="Konfirmasi Pengalihan"
         description={
           selected
-            ? `Yakin ingin mengalihkan konsultasi ${studentName ?? "siswa ini"} ke Kak ${selected.fullName}?`
+            ? `Yakin ingin mengalihkan konsultasi ${studentName ?? "murid ini"} ke Kak ${selected.fullName}?`
             : undefined
         }
         footer={

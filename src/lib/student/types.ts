@@ -68,7 +68,7 @@ export function getStudentDisplayName(
   const trimmed = nickname?.trim();
   if (trimmed) return trimmed;
   const label = avatarSeed ? AVATAR_SEED_LABELS[avatarSeed] : undefined;
-  return `Anonim_${label ?? "Siswa"}`;
+  return `Anonim_${label ?? "Murid"}`;
 }
 
 export type StudentSessionSummary = {
