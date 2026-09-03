@@ -81,7 +81,7 @@ export default function KonfirmasiPage() {
 
       <div className="rounded-md border-l-4 border-secondary bg-secondary-container px-3 py-2 text-label-md text-on-secondary-container">
         🔒 Ruang Aman &amp; Rahasia — identitasmu tidak dibagikan ke siapa pun selain kakak
-        pendamping dan guru yang memantau untuk keamananmu.
+        pendamping.
       </div>
 
       {error && (
