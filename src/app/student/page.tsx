@@ -76,7 +76,7 @@ export default function StudentWelcomePage() {
               🛡️
             </div>
             <p className="text-[0.85rem] text-[#3a4a5c] leading-relaxed pt-0.5">
-              Percakapan dapat dilihat oleh guru untuk membantu menjaga keamanan.
+              Tak semua hal harus dipendam sendiri. Biarkan ceritamu menemukan ruangnya🤍
             </p>
           </div>
 
