@@ -159,7 +159,7 @@ function ChatSession({
       </header>
 
       <div className="border-b border-outline-variant bg-secondary-container px-sm py-2 text-label-sm text-on-secondary-container">
-        ℹ️ Percakapan ini dapat dipantau oleh guru.
+        ℹ️ Bebas bercerita, tetap gunakan bahasa yang baik
       </div>
 
       {error && (
