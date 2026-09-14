@@ -102,7 +102,7 @@ export default function LandingPage() {
 
         {/* Footer */}
         <p className="text-xs text-slate-500 font-medium mt-4 select-none">
-          &copy; {new Date().getFullYear()} Ruang Cerita. Dikelola oleh Tim Bimbingan Konseling.
+          &copy; {new Date().getFullYear()} Ruang Cerita. Dikembangkan oleh SDUMA NEXUS.
         </p>
 
       </div>
