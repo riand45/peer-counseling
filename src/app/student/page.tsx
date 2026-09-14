@@ -50,9 +50,9 @@ export default function StudentWelcomePage() {
         <div className="relative w-full h-52 bg-[#dce8f5] overflow-hidden">
           <Image
             src="/hero-illustration.jpg"
-            alt="Ilustrasi tiga mahasiswa berdiskusi di ruangan yang nyaman"
+            alt="Logo maskot Ruang Cerita"
             fill
-            className="object-cover object-center"
+            className="object-contain object-center p-4"
             priority
           />
         </div>
